@@ -1,11 +1,3 @@
 {
-  "users": [
-    { "id": "1", "name": "Lina Dupont", "email": "lina@example.com" },
-    { "id": "2", "name": "Kamil Martin", "email": "kamil@example.com" }
-  ],
-  "articles": [
-    { "id": "1", "name": "Laptop Pro 15\"", "description": "Ordinateur portable haute performance", "price": 1299.99 },
-    { "id": "2", "name": "Souris ergonomique", "description": "Souris sans fil avec repose-poignet", "price": 49.99 },
-    { "id": "3", "name": "Clavier mécanique", "description": "Clavier rétroéclairé switches Cherry MX", "price": 129.99 }
-  ]
+  "profiles": []
 }
