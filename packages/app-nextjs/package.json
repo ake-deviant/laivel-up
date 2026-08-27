@@ -1,5 +1,5 @@
 {
-  "name": "@frontend-archetype/app-nextjs",
+  "name": "@laivel-up/app-nextjs",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@frontend-archetype/core": "*",
+    "@laivel-up/core": "*",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
