@@ -18,8 +18,7 @@ export default tseslint.config(
     ignores: [
       '**/dist/**',
       '**/node_modules/**',
-      '**/.angular/**',
-      '**/jest.config.ts',
+      '**/vitest.config.ts',
     ],
   },
 );
