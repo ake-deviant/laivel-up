@@ -73,10 +73,13 @@ function readRaw(dirPath: string): unknown {
 }
 
 export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepository {
-  constructor(private readonly parser: IProfileParser) {}
+  constructor(
+    private readonly parser: IProfileParser,
+    private readonly baseDir: string,
+  ) {}
 
-  findByPath(dirPath: string): Result<DeveloperProfile, ParseError> {
-    const raw = readRaw(dirPath);
+  findById(profileId: string): Result<DeveloperProfile, ParseError> {
+    const raw = readRaw(path.join(this.baseDir, profileId));
     const result = this.parser.parse(raw);
     if (result.isErr) return result;
     return ok(result.value.profile);

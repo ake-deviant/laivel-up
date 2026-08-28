@@ -3,30 +3,27 @@ import { ParseError } from '../../../domain/errors/parse.error';
 import { ZodProfileParser } from '../../../infrastructure/parsers/zod-profile-parser';
 import { LaivelUpDeveloperProfileRepository } from '../../../infrastructure/repositories/laivel-up-developer-profile-repository';
 
-const PROFILES_DIR = path.resolve(__dirname, '../../fixtures/profiles');
+const PROFILES_DIR = path.resolve(process.cwd(), process.env.PROFILES_BASE_DIR!);
 const parser = new ZodProfileParser();
 
 describe('LaivelUpDeveloperProfileRepository', () => {
-  const repo = new LaivelUpDeveloperProfileRepository(parser);
+  const repo = new LaivelUpDeveloperProfileRepository(parser, PROFILES_DIR);
 
-  describe('findByPath', () => {
+  describe('findById', () => {
     it('should return a DeveloperProfile for arthur', () => {
-      const result = repo.findByPath(path.join(PROFILES_DIR, 'arthur'));
-      expect(result.isOk).toBe(true);
+      expect(repo.findById('arthur').isOk).toBe(true);
     });
 
     it('should return a DeveloperProfile for bohort', () => {
-      const result = repo.findByPath(path.join(PROFILES_DIR, 'bohort'));
-      expect(result.isOk).toBe(true);
+      expect(repo.findById('bohort').isOk).toBe(true);
     });
 
     it('should return a DeveloperProfile for perceval', () => {
-      const result = repo.findByPath(path.join(PROFILES_DIR, 'perceval'));
-      expect(result.isOk).toBe(true);
+      expect(repo.findById('perceval').isOk).toBe(true);
     });
 
-    it('should return a ParseError when profile.json has blocking field missing', () => {
-      const result = repo.findByPath(path.join(PROFILES_DIR, 'invalid-profile'));
+    it('should return a ParseError when profile.json has a blocking field missing', () => {
+      const result = repo.findById('invalid-profile');
       expect(result.isErr).toBe(true);
       if (result.isErr) {
         expect(result.error).toBeInstanceOf(ParseError);
@@ -34,8 +31,8 @@ describe('LaivelUpDeveloperProfileRepository', () => {
       }
     });
 
-    it('should throw when the directory does not exist', () => {
-      expect(() => repo.findByPath(path.join(PROFILES_DIR, 'non-existent'))).toThrow();
+    it('should throw when the profile directory does not exist', () => {
+      expect(() => repo.findById('non-existent')).toThrow();
     });
   });
 });

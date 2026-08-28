@@ -3,5 +3,5 @@ import { ParseError } from '../../domain/errors/parse.error';
 import { Result } from '../../domain/shared/result';
 
 export interface IDeveloperProfileRepository {
-  findByPath(dirPath: string): Result<DeveloperProfile, ParseError>;
+  findById(profileId: string): Result<DeveloperProfile, ParseError>;
 }

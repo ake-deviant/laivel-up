@@ -1,19 +1,30 @@
 import { DeveloperProfile } from '../../domain/entities/developer-profile';
 
+const base: DeveloperProfile = {
+  id: 'test',
+  availableSources: [],
+  profile: null,
+  size: { distribution: null, medianFilesChanged: null, medianLinesChanged: null },
+  harness: { contextEngineering: null, behavior: null, loops: null },
+  intervention: {
+    medianCorrectionCommitsAfterOpen: null,
+    mergedWithoutHumanEditRatio: null,
+    medianReviewCommentsReceived: null,
+    humanCommitRatio: null,
+  },
+  parallelism: {
+    maxConcurrentBranches: null,
+    medianConcurrentBranches: null,
+    hasWorktreeInclude: null,
+  },
+};
+
 export class DeveloperProfileFixture {
   static valid(): DeveloperProfile {
-    return { id: '1', name: 'Alice' };
-  }
-
-  static withoutName(): DeveloperProfile {
-    return { id: '1', name: null };
+    return { ...base };
   }
 
   static withoutId(): DeveloperProfile {
-    return { id: '', name: 'Alice' };
-  }
-
-  static withoutIdAndName(): DeveloperProfile {
-    return { id: '', name: null };
+    return { ...base, id: '' };
   }
 }
