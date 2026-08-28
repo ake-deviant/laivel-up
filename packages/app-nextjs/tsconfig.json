@@ -22,7 +22,7 @@
       }
     ],
     "paths": {
-      "@frontend-archetype/core": [
+      "@laivel-up/core": [
         "../core/src/index.ts"
       ],
       "@/*": [
