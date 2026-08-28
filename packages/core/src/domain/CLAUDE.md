@@ -3,7 +3,7 @@
 Règles métier pures. Aucune dépendance externe, aucun import depuis les autres couches.
 
 ## Ce qui appartient ici
-- Entités : `*.entity.ts`
+- Entités : aucun suffixe (ex: `developer-profile.ts`, `aidd-level-value.ts`)
 - Erreurs métier : `*.error.ts` (étendent `DomainError`)
 - Ports domaine : `*.port.ts` (ex: `IProfileEvaluator`)
 - Utilitaires partagés : `shared/` (`Result<T,E>`)
