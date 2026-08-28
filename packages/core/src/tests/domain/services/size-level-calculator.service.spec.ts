@@ -4,6 +4,8 @@ import { SizeDistribution } from '../../../domain/entities/size-distribution';
 import { SizeProfile } from '../../../domain/entities/size-profile';
 import { sizeThresholdsConfigFixture } from '../../fixtures/size-thresholds-config.fixture';
 
+const cfg = sizeThresholdsConfigFixture;
+
 const toSize = (distribution: SizeDistribution | null): SizeProfile => ({
   distribution,
   medianFilesChanged: null,
@@ -14,10 +16,8 @@ describe('Size level calculator', () => {
   let calculator: SizeLevelCalculatorService;
 
   beforeEach(() => {
-    calculator = new SizeLevelCalculatorService(sizeThresholdsConfigFixture);
+    calculator = new SizeLevelCalculatorService(cfg);
   });
-
-  const cfg = sizeThresholdsConfigFixture;
 
   it.each([
     {
@@ -26,18 +26,74 @@ describe('Size level calculator', () => {
       expected: AiddLevelValue.white,
     },
     {
-      label: 'small PRs dominate',
-      distribution: { xs: 0.05, s: 0.7, m: 0.15, l: 0.05, xl: cfg.copper.minXl / 2 },
+      label: 'xs meets minXs and no other level qualifies',
+      distribution: { xs: cfg.white.minXs, s: 0, m: 0, l: 0, xl: 0 },
+      expected: AiddLevelValue.white,
+    },
+    {
+      label: 's is highest but below minS',
+      distribution: {
+        xs: 0,
+        s: cfg.red.minS - 0.01,
+        m: cfg.red.minS - 0.02,
+        l: cfg.red.minS - 0.02,
+        xl: 0,
+      },
+      expected: AiddLevelValue.white,
+    },
+    {
+      label: 'm is highest but below minM',
+      distribution: {
+        xs: 0,
+        s: cfg.blue.minM - 0.02,
+        m: cfg.blue.minM - 0.01,
+        l: cfg.blue.minM - 0.02,
+        xl: 0,
+      },
+      expected: AiddLevelValue.white,
+    },
+    {
+      label: 'l is highest but below minL',
+      distribution: {
+        xs: 0,
+        s: cfg.green.minL - 0.02,
+        m: cfg.green.minL - 0.02,
+        l: cfg.green.minL - 0.01,
+        xl: 0,
+      },
+      expected: AiddLevelValue.white,
+    },
+    {
+      label: 's reaches minS and dominates',
+      distribution: {
+        xs: 0,
+        s: cfg.red.minS,
+        m: cfg.red.minS - 0.01,
+        l: cfg.red.minS - 0.01,
+        xl: cfg.copper.minXl / 2,
+      },
       expected: AiddLevelValue.red,
     },
     {
-      label: 'medium PRs dominate',
-      distribution: { xs: 0.05, s: 0.15, m: 0.6, l: 0.1, xl: cfg.copper.minXl / 2 },
+      label: 'm reaches minM and dominates',
+      distribution: {
+        xs: 0,
+        s: cfg.blue.minM - 0.01,
+        m: cfg.blue.minM,
+        l: cfg.blue.minM - 0.01,
+        xl: cfg.copper.minXl / 2,
+      },
       expected: AiddLevelValue.blue,
     },
     {
-      label: 'large PRs dominate without enough XL for copper',
-      distribution: { xs: 0.05, s: 0.1, m: 0.2, l: 0.55, xl: cfg.copper.minXl / 2 },
+      label: 'l reaches minL and dominates without enough XL for copper',
+      distribution: {
+        xs: 0,
+        s: cfg.green.minL - 0.01,
+        m: cfg.green.minL - 0.01,
+        l: cfg.green.minL,
+        xl: cfg.copper.minXl / 2,
+      },
       expected: AiddLevelValue.green,
     },
     {
