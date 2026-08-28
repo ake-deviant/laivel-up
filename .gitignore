@@ -28,3 +28,6 @@ npm-debug.log*
 Thumbs.db
 
 temp/
+
+# Production data — profiles are delivered externally, not versioned
+data/profiles/
