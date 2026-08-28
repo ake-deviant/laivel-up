@@ -19,6 +19,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/node_modules/**',
       '**/vitest.config.ts',
+      '**/tests/fixtures/profiles/**',
     ],
   },
 );

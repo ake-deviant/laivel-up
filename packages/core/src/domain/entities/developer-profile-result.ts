@@ -1,4 +1,9 @@
+import { AiddLevelValue } from './aidd-level-value';
+
 export interface DeveloperProfileResult {
-  id: string;
-  name: string | null;
+  overallLevel: AiddLevelValue;
+  sizeLevel: AiddLevelValue;
+  harnessLevel: AiddLevelValue;
+  interventionLevel: AiddLevelValue;
+  parallelismLevel: AiddLevelValue;
 }
