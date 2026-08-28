@@ -1,19 +1,20 @@
 import { ParseError } from '../../../domain/errors/parse.error';
 import { ZodProfileParser } from '../../../infrastructure/parsers/zod-profile-parser';
+import { DeveloperProfileFixture } from '../../fixtures/developer-profile.fixture';
 
 const parser = new ZodProfileParser();
 
 describe('ZodProfileParser', () => {
   it('should parse a valid profile', () => {
-    const result = parser.parse({ id: '1', name: 'Alice' });
+    const result = parser.parse(DeveloperProfileFixture.valid());
     expect(result.isOk).toBe(true);
     if (result.isOk) {
-      expect(result.value).toEqual({ id: '1', name: 'Alice' });
+      expect(result.value).toEqual(DeveloperProfileFixture.valid());
     }
   });
 
   it('should accept name as null', () => {
-    const result = parser.parse({ id: '1', name: null });
+    const result = parser.parse(DeveloperProfileFixture.withoutName());
     expect(result.isOk).toBe(true);
     if (result.isOk) {
       expect(result.value.name).toBeNull();

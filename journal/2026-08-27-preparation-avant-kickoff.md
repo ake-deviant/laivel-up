@@ -9,6 +9,9 @@ Hackathon Laivel Up — kickoff demain 12h.
 - Migration Jest → Vitest
 - Installation Tailwind v4 et Zod
 - Structure de dossiers clean architecture prête
+- `ZodProfileParser` dans `core/infrastructure`, Zod découplé de Next.js
+- Premier test écrit et passant : `ZodProfileParser` (4 cas)
+- Données de test centralisées pour survivre aux changements de schéma
 
 ## Décisions architecturales
 
