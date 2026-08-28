@@ -13,7 +13,6 @@ export class DeveloperProfileTriageService {
     const ignoredNulls: string[] = [];
 
     if (!profile.id) blockingIssues.push('id');
-    if (profile.name === null) ignoredNulls.push('name');
 
     return { blockingIssues, impactingNulls, ignoredNulls };
   }

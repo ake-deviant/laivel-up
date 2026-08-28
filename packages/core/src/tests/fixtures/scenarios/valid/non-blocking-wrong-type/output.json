@@ -1,0 +1,40 @@
+{
+  "profile": {
+    "id": "test",
+    "availableSources": [],
+    "profile": {
+      "role": null,
+      "experienceYears": null,
+      "stack": null,
+      "teamSize": null,
+      "note": null
+    },
+    "size": {
+      "distribution": null,
+      "medianFilesChanged": null,
+      "medianLinesChanged": null
+    },
+    "harness": {
+      "contextEngineering": null,
+      "behavior": null,
+      "loops": null
+    },
+    "intervention": {
+      "medianCorrectionCommitsAfterOpen": null,
+      "mergedWithoutHumanEditRatio": null,
+      "medianReviewCommentsReceived": null,
+      "humanCommitRatio": null
+    },
+    "parallelism": {
+      "maxConcurrentBranches": null,
+      "medianConcurrentBranches": null,
+      "hasWorktreeInclude": null
+    }
+  },
+  "formatWarnings": [
+    {
+      "field": "experience_years",
+      "reason": "Expected number, received string"
+    }
+  ]
+}

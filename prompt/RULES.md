@@ -11,3 +11,9 @@ Les décisions techniques et architecturales appartiennent exclusivement à l'ut
 
 ## Règle 3
 Avant de nommer un fichier, un champ, une méthode ou un dossier, vérifier les conventions existantes dans le projet et s'y conformer strictement.
+
+## Règle 4
+Le code est en anglais. Cela inclut les descriptions de tests, les noms de variables, les messages de code. Le français est réservé aux échanges avec l'utilisateur.
+
+## Règle 5
+Le code est l'unique source de vérité pour la terminologie. Utiliser exclusivement les termes tels qu'ils apparaissent dans le code. Aucun synonyme, aucune reformulation : `level` reste `level`, `size` reste `size`, `harness` reste `harness`. La documentation est en français et ne fait pas référence.
