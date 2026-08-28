@@ -22,6 +22,7 @@ const stubResult: DeveloperProfileResult = {
   harnessLevel: AiddLevelValue.white,
   interventionLevel: AiddLevelValue.white,
   parallelismLevel: AiddLevelValue.white,
+  improvements: [],
 };
 
 const stubEvaluator: IDeveloperProfileEvaluator = {

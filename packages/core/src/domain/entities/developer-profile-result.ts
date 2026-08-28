@@ -1,4 +1,5 @@
 import { AiddLevelValue } from './aidd-level-value';
+import { Improvement } from './improvement';
 
 export interface DeveloperProfileResult {
   overallLevel: AiddLevelValue;
@@ -6,4 +7,5 @@ export interface DeveloperProfileResult {
   harnessLevel: AiddLevelValue;
   interventionLevel: AiddLevelValue;
   parallelismLevel: AiddLevelValue;
+  improvements: Improvement[];
 }

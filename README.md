@@ -61,3 +61,25 @@ new SizeLevelCalculatorService({
   gold:   { minXl: 0.4, minLXl: 0.6 },
 });
 ```
+
+## Axe Parallèle — calcul du niveau
+
+Le niveau parallelism est calculé à partir d'un score pondéré sur `medianConcurrentBranches` et `maxConcurrentBranches` — le median reflète l'habitude réelle (poids dominant), le max reflète la capacité maximale atteinte (signal secondaire) — un pic isolé ne fait pas le niveau. Le worktree (`hasWorktreeInclude`) est une condition requise pour atteindre gold, pas une pondération.
+
+L'algorithme est modulaire à trois niveaux :
+
+- **Config** (`ParallelismThresholdsConfig`) — ajuster les poids et les seuils sans toucher au code
+- **Stratégie** (`IParallelismScoringStrategy`) — remplacer la logique de calcul du score
+- **Calculateur** (`IParallelismLevelCalculator`) — remplacer tout l'algorithme de l'axe parralèle.
+
+Config par défaut (`packages/core/src/domain/services/parallelism-thresholds.config.ts`) :
+
+| Level | minScore | Condition |
+|---|---|---|
+| white | fallback | — |
+| red | 7 | — |
+| blue | 10 | — |
+| green | 15 | — |
+| copper | 20 | — |
+| silver | 25 | — |
+| gold | 20 | worktree requis |

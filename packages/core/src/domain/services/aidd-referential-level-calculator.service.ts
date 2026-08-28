@@ -11,6 +11,7 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
       harnessLevel: AiddLevelValue.white,
       interventionLevel: AiddLevelValue.white,
       parallelismLevel: AiddLevelValue.white,
+      improvements: [],
     };
   }
 }
