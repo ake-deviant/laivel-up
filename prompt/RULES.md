@@ -17,3 +17,14 @@ Le code est en anglais. Cela inclut les descriptions de tests, les noms de varia
 
 ## Règle 5
 Le code est l'unique source de vérité pour la terminologie. Utiliser exclusivement les termes tels qu'ils apparaissent dans le code. Aucun synonyme, aucune reformulation : `level` reste `level`, `size` reste `size`, `harness` reste `harness`. La documentation est en français et ne fait pas référence.
+
+## Règle 6
+Ne jamais committer sans demander
+Ne jamais exécuter `git commit` sans avoir demandé et obtenu l'accord explicite de l'utilisateur. Peu importe le contexte, peu importe si "c'est juste un commit de doc". Toujours demander.
+
+## Règle 7
+Ne jamais pusher sans demander
+Même règle pour `git push`.
+
+## Règle 8
+Ne jamais proposer la prochaine tâche une fois une tâche terminée. Seul l'utilisateur décide de la suite.

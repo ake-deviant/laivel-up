@@ -8,6 +8,7 @@ import { ParseError } from '../../../../domain/errors/parse.error';
 import { DeveloperInvalidProfileError } from '../../../../domain/errors/developer-invalid-profile.error';
 import { Result, ok, err } from '../../../../domain/shared/result';
 import { DeveloperProfileFixture } from '../../../fixtures/developer-profile.fixture';
+import { ImprovementCollector } from '../../../../domain/services/improvement-collector';
 
 class InMemoryDeveloperProfileRepository implements IDeveloperProfileRepository {
   constructor(private readonly result: Result<DeveloperProfile, ParseError>) {}
@@ -33,7 +34,11 @@ describe('EvaluateDeveloperProfileUseCase', () => {
   it('should return ParseError when repository fails', () => {
     const parseError = new ParseError('missing profile_id', ['profile_id']);
     const repo = new InMemoryDeveloperProfileRepository(err(parseError));
-    const useCase = new EvaluateDeveloperProfileUseCase(repo, stubEvaluator);
+    const useCase = new EvaluateDeveloperProfileUseCase(
+      repo,
+      stubEvaluator,
+      new ImprovementCollector(),
+    );
 
     const result = useCase.execute('arthur');
 
@@ -43,7 +48,11 @@ describe('EvaluateDeveloperProfileUseCase', () => {
 
   it('should return DeveloperProfileResult when profile is valid', () => {
     const repo = new InMemoryDeveloperProfileRepository(ok(DeveloperProfileFixture.valid()));
-    const useCase = new EvaluateDeveloperProfileUseCase(repo, stubEvaluator);
+    const useCase = new EvaluateDeveloperProfileUseCase(
+      repo,
+      stubEvaluator,
+      new ImprovementCollector(),
+    );
 
     const result = useCase.execute('arthur');
 
@@ -53,7 +62,11 @@ describe('EvaluateDeveloperProfileUseCase', () => {
 
   it('should return DeveloperInvalidProfileError when profile has no id', () => {
     const repo = new InMemoryDeveloperProfileRepository(ok(DeveloperProfileFixture.withoutId()));
-    const useCase = new EvaluateDeveloperProfileUseCase(repo, stubEvaluator);
+    const useCase = new EvaluateDeveloperProfileUseCase(
+      repo,
+      stubEvaluator,
+      new ImprovementCollector(),
+    );
 
     const result = useCase.execute('arthur');
 
