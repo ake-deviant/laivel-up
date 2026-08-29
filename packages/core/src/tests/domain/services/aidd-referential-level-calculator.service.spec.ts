@@ -1,13 +1,19 @@
 import { AiddReferentialLevelCalculatorService } from '../../../domain/services/aidd-referential-level-calculator.service';
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
+import { IInterventionLevelCalculator } from '../../../domain/services/intervention-level-calculator.service';
 import { IParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
 import { ISizeLevelCalculator } from '../../../domain/services/size-level-calculator.service';
+import { InterventionProfile } from '../../../domain/entities/intervention-profile';
 import { ParallelismProfile } from '../../../domain/entities/parallelism-profile';
 import { SizeProfile } from '../../../domain/entities/size-profile';
 import { DeveloperProfileFixture } from '../../fixtures/developer-profile.fixture';
 
 const stubSizeCalculator = (level: AiddLevelValue): ISizeLevelCalculator => ({
   calculate: (_profile: SizeProfile) => level,
+});
+
+const stubInterventionCalculator = (level: AiddLevelValue): IInterventionLevelCalculator => ({
+  calculate: (_profile: InterventionProfile) => level,
 });
 
 const stubParallelismCalculator = (level: AiddLevelValue): IParallelismLevelCalculator => ({
@@ -20,6 +26,7 @@ describe('AIDD level calculator', () => {
       // arrange
       const calculator = new AiddReferentialLevelCalculatorService(
         stubSizeCalculator(AiddLevelValue.white),
+        stubInterventionCalculator(AiddLevelValue.white),
         stubParallelismCalculator(AiddLevelValue.white),
       );
       const profile = DeveloperProfileFixture.valid();
@@ -44,6 +51,7 @@ describe('AIDD level calculator', () => {
       // arrange
       const calculator = new AiddReferentialLevelCalculatorService(
         stubSizeCalculator(AiddLevelValue.silver),
+        stubInterventionCalculator(AiddLevelValue.gold),
         stubParallelismCalculator(AiddLevelValue.gold),
       );
       const profile = DeveloperProfileFixture.valid();

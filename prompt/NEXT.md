@@ -22,14 +22,27 @@ Hackathon Laivel Up (deadline 31 août 12h). L'objectif est d'évaluer le niveau
 - `createWeightedParallelismLevelCalculator` — score pondéré `median × 5 + max × 1`, worktree = condition gold, events `worktree_data_missing` / `worktree_not_configured`
 - `defaultParallelismThresholdsConfig` — config prod (séparée de la fixture de test)
 - `lowestLevel(...levels)` — fonction dans `aidd-level-value.ts`, retourne le niveau le plus bas parmi une liste de niveaux
-- `AiddReferentialLevelCalculatorService` — orchestre les calculateurs d'axe, branché sur size + parallelism. `overallLevel` = `lowestLevel(sizeLevel, parallelismLevel)`
+- `AiddReferentialLevelCalculatorService` — orchestre les calculateurs d'axe, branché sur size + intervention + parallelism. `overallLevel` = `lowestLevel(sizeLevel, interventionLevel, parallelismLevel)`
+- `createInterventionLevelCalculator` — conditions multi-signaux configurables par level via `InterventionThresholdsConfig`. Signaux : `medianCorrectionCommitsAfterOpen`, `humanCommitRatio`, `mergedWithoutHumanEditRatio`, `medianReviewCommentsReceived`
+- `defaultInterventionThresholdsConfig` — config prod (séparée de la fixture de test)
+- `InterventionProfile` — enrichi : `totalPrCount`, `mergedWithoutHumanEditCount`, `mergedWithoutHumanEditRatio` (calculé dans le mapper depuis count / total)
 - Container IoC `@evyweb/ioctopus` dans `packages/app-nextjs/src/di/` — `ImprovementCollector` scoped, repository singleton. Chaque nouveau calculateur d'axe nécessite un token dans `di.ts` et un binding dans `container.ts`
 - Route API `GET /api/evaluate/[profileId]` — retourne `DeveloperProfileResult` avec `improvements[]`
-- 65 tests passent
+- 79 tests passent
+
+## Décisions d'algorithme — axe Intervention
+
+- `medianCorrectionCommitsAfterOpen` est le signal principal (commits poussés après ouverture de la PR)
+- `humanCommitRatio` distingue silver de copper et gold de silver
+- `mergedWithoutHumanEditRatio` confirme silver (≥ 0.50)
+- `medianReviewCommentsReceived` renforce copper et blue
+- Green est sauté : quand les deux descriptions sont identiques, on attribue le level le plus haut (copper)
+- Gold requiert les 3 conditions strictes à 0/0/1 — "plusieurs PR par jour" retiré (donnée non mesurable fiablement, à documenter dans README)
+- 79 tests passent
 
 ## Prochain travail
 
-Implémenter `InterventionLevelCalculatorService`, le brancher dans `AiddReferentialLevelCalculatorService` et l'inclure dans le calcul du `overallLevel`.
+À définir par l'utilisateur.
 
 ## Docs à lire avant d'implémenter
 
