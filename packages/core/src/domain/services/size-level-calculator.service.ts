@@ -1,6 +1,10 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { SizeProfile } from '../entities/size-profile';
 
+export interface ISizeLevelCalculator {
+  calculate(size: SizeProfile): AiddLevelValue;
+}
+
 export interface SizeThresholdsConfig {
   white: { minXs: number };
   red: { minS: number };
@@ -11,7 +15,7 @@ export interface SizeThresholdsConfig {
   gold: { minXl: number; minLXl: number };
 }
 
-export class SizeLevelCalculatorService {
+export class SizeLevelCalculatorService implements ISizeLevelCalculator {
   constructor(private readonly thresholds: SizeThresholdsConfig) {}
 
   calculate(size: SizeProfile): AiddLevelValue {

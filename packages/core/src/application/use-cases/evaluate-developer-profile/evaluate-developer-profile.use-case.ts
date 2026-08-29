@@ -1,5 +1,6 @@
 import { IDeveloperProfileRepository } from '../../ports/developer-profile-repository.port';
 import { IDeveloperProfileEvaluator } from '../../../domain/ports/developer-profile-evaluator.port';
+import { ImprovementCollector } from '../../../domain/services/improvement-collector';
 import { DeveloperProfileResult } from '../../../domain/entities/developer-profile-result';
 import { DeveloperInvalidProfileError } from '../../../domain/errors/developer-invalid-profile.error';
 import { DomainError } from '../../../domain/errors/domain.error';
@@ -12,6 +13,7 @@ export class EvaluateDeveloperProfileUseCase {
   constructor(
     private readonly repository: IDeveloperProfileRepository,
     private readonly evaluator: IDeveloperProfileEvaluator,
+    private readonly collector: ImprovementCollector,
   ) {}
 
   execute(profileId: string): Result<DeveloperProfileResult, DomainError> {
@@ -23,6 +25,7 @@ export class EvaluateDeveloperProfileUseCase {
       return err(new DeveloperInvalidProfileError(report.blockingIssues));
     }
 
-    return ok(this.evaluator.evaluate(profileResult.value));
+    const result = this.evaluator.evaluate(profileResult.value);
+    return ok({ ...result, improvements: this.collector.improvements });
   }
 }

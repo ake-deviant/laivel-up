@@ -34,7 +34,7 @@ npm install
 npm test
 ```
 
-## Thresholds configurables
+## Axe Taille — calcul du niveau
 
 Le référentiel ne fixe pas les valeurs exactes. Tous les levels sont configurables via `SizeThresholdsConfig` injectée au service.
 
@@ -61,3 +61,52 @@ new SizeLevelCalculatorService({
   gold:   { minXl: 0.4, minLXl: 0.6 },
 });
 ```
+
+## Axe Parallèle — calcul du niveau
+
+Le niveau parallelism est calculé à partir d'un score pondéré sur `medianConcurrentBranches` et `maxConcurrentBranches` — le median reflète l'habitude réelle (poids dominant), le max reflète la capacité maximale atteinte (signal secondaire) — un pic isolé ne fait pas le niveau. Le worktree (`hasWorktreeInclude`) est une condition requise pour atteindre gold, pas une pondération.
+
+L'algorithme est modulaire à trois niveaux :
+
+- **Config** (`ParallelismThresholdsConfig`) — ajuster les poids et les seuils sans toucher au code
+- **Stratégie** (`IParallelismScoringStrategy`) — remplacer la logique de calcul du score
+- **Calculateur** (`IParallelismLevelCalculator`) — remplacer tout l'algorithme de l'axe parralèle.
+
+Config par défaut (`packages/core/src/domain/services/parallelism-thresholds.config.ts`) :
+
+| Level | minScore | Condition |
+|---|---|---|
+| white | fallback | — |
+| red | 7 | — |
+| blue | 10 | — |
+| green | 15 | — |
+| copper | 20 | — |
+| silver | 25 | — |
+| gold | 20 | worktree requis |
+
+## Injection de dépendances (IoC)
+
+Le container IoC `@evyweb/ioctopus` est configuré dans `packages/app-nextjs/src/di/`. Chaque service est identifié par un token symbol déclaré dans `di.ts`.
+
+Ajouter un nouveau calculateur d'axe = 3 étapes :
+1. Déclarer un token dans `di.ts`
+2. Binder le service dans `container.ts`
+3. L'injecter dans `AiddReferentialLevelCalculatorService`
+
+## Système d'amélioration (ILevelImprovementBus)
+
+Pendant le calcul de chaque axe, des événements sont émis lorsqu'un profil frôle un level sans l'atteindre. Ces événements sont collectés par `ImprovementCollector` et renvoyés dans la réponse sous forme de liste `improvements`.
+
+Ce mécanisme est transverse à tous les axes : chaque calculateur reçoit un bus en injection, et peut émettre ses propres événements sans couplage au use case.
+
+```
+ILevelImprovementBus.emit(event)
+  └── ImprovementCollector  →  improvements: Improvement[]  →  DeveloperProfileResult
+```
+
+### Événements existants
+
+| Axe | Type | Déclencheur |
+|---|---|---|
+| parallelism | `worktree_data_missing` | score atteint gold mais `hasWorktreeInclude` est null |
+| parallelism | `worktree_not_configured` | score atteint gold mais `hasWorktreeInclude` est false |
