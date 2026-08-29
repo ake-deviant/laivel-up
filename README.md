@@ -84,6 +84,25 @@ Config par défaut (`packages/core/src/domain/services/parallelism-thresholds.co
 | silver | 25 | — |
 | gold | 20 | worktree requis |
 
+## Axe Intervention — calcul du niveau
+
+L'algorithme évalue des conditions multi-signaux par level, du plus haut au plus bas. Le premier level dont toutes les conditions sont satisfaites est retenu. Une condition non renseignée (`null`) échoue — on ne récompense pas une donnée absente.
+
+Config par défaut (`packages/core/src/domain/services/intervention-thresholds.config.ts`) :
+
+| Level | `medianCorrectionCommitsAfterOpen` | `humanCommitRatio` | `mergedWithoutHumanEditRatio` | `medianReviewCommentsReceived` |
+|---|---|---|---|---|
+| gold | = 0 | = 0 | = 1 | — |
+| silver | = 0 | ≤ 0.15 | ≥ 0.50 | ≤ 2 |
+| copper | ≤ 1 | — | — | ≤ 3 |
+| blue | ≤ 3 | — | — | ≤ 5 |
+| red | fallback si signal IA présent | | | |
+| white | fallback final | | | |
+
+> **"Plusieurs PR par jour" (condition gold du référentiel) :** non implémenté. Le calcul d'un ratio journalier à partir du total de PR sur la période serait faussé par les périodes d'inactivité (congés, sprint off) — un développeur qui livre 30 PR en une semaine puis s'arrête deux mois aurait une moyenne basse sans que cela reflète son niveau réel. Les données disponibles ne fournissent pas de distribution journalière, rendant cette condition non mesurable de façon fiable.
+
+> **Green sauté :** green et copper partagent la même description d'intervention dans le référentiel. Quand deux levels ont une description identique sur un axe, on attribue le plus haut — les autres axes trancheront le niveau global.
+
 ## Injection de dépendances (IoC)
 
 Le container IoC `@evyweb/ioctopus` est configuré dans `packages/app-nextjs/src/di/`. Chaque service est identifié par un token symbol déclaré dans `di.ts`.

@@ -7,7 +7,9 @@ const base: DeveloperProfile = {
   size: { distribution: null, medianFilesChanged: null, medianLinesChanged: null },
   harness: { contextEngineering: null, behavior: null, loops: null },
   intervention: {
+    totalPrCount: null,
     medianCorrectionCommitsAfterOpen: null,
+    mergedWithoutHumanEditCount: null,
     mergedWithoutHumanEditRatio: null,
     medianReviewCommentsReceived: null,
     humanCommitRatio: null,

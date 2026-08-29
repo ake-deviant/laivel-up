@@ -106,9 +106,13 @@ function mapHarness(
 function mapIntervention(gitActivity: LaivelUpGitActivityInput | null): InterventionProfile {
   const pr = gitActivity?.pull_requests;
   const aiRatio = gitActivity?.commits?.ai_coauthored_ratio;
+  const count = pr?.merged_without_human_edit_after_open ?? null;
+  const total = pr?.total ?? null;
   return {
+    totalPrCount: total,
     medianCorrectionCommitsAfterOpen: pr?.median_correction_commits_after_open ?? null,
-    mergedWithoutHumanEditRatio: pr?.merged_without_human_edit_after_open ?? null,
+    mergedWithoutHumanEditCount: count,
+    mergedWithoutHumanEditRatio: count != null && total ? count / total : null,
     medianReviewCommentsReceived: pr?.median_review_comments_received ?? null,
     humanCommitRatio: aiRatio != null ? 1 - aiRatio : null,
   };

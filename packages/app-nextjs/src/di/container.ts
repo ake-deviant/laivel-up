@@ -7,9 +7,12 @@ import {
   EvaluateDeveloperProfileUseCase,
   createWeightedParallelismLevelCalculator,
   defaultParallelismThresholdsConfig,
+  createInterventionLevelCalculator,
+  defaultInterventionThresholdsConfig,
   SizeLevelCalculatorService,
   defaultSizeThresholdsConfig,
   ILevelImprovementBus,
+  IInterventionLevelCalculator,
   IParallelismLevelCalculator,
   ISizeLevelCalculator,
   IDeveloperProfileRepository,
@@ -36,6 +39,17 @@ container
   .toFactory(() => new SizeLevelCalculatorService(defaultSizeThresholdsConfig));
 
 container
+  .bind(DI.INTERVENTION_LEVEL_CALCULATOR)
+  .toFactory(
+    (resolve: ResolveFunction) =>
+      createInterventionLevelCalculator(
+        defaultInterventionThresholdsConfig,
+        r<ILevelImprovementBus>(resolve, DI.IMPROVEMENT_COLLECTOR),
+      ),
+    'scoped',
+  );
+
+container
   .bind(DI.PARALLELISM_LEVEL_CALCULATOR)
   .toFactory(
     (resolve: ResolveFunction) =>
@@ -52,6 +66,7 @@ container
     (resolve: ResolveFunction) =>
       new AiddReferentialLevelCalculatorService(
         r<ISizeLevelCalculator>(resolve, DI.SIZE_LEVEL_CALCULATOR),
+        r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
         r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
       ),
     'scoped',

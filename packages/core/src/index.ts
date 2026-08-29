@@ -20,6 +20,9 @@ export { AiddReferentialLevelCalculatorService } from './domain/services/aidd-re
 export { SizeLevelCalculatorService } from './domain/services/size-level-calculator.service';
 export type { ISizeLevelCalculator } from './domain/services/size-level-calculator.service';
 export { defaultSizeThresholdsConfig } from './domain/services/size-thresholds.config';
+export { createInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
+export type { IInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
+export { defaultInterventionThresholdsConfig } from './domain/services/intervention-thresholds.config';
 export { createWeightedParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
 export type { IParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
 export { defaultParallelismThresholdsConfig } from './domain/services/parallelism-thresholds.config';
