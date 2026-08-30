@@ -31,6 +31,7 @@ export interface AxisViewModel {
   axis: ImprovementAxis;
   label: string;
   level: LevelViewModel;
+  calculable: boolean;
   signals: SignalViewModel[];
   fieldGroups: AxisFieldGroupViewModel[];
 }
@@ -44,7 +45,7 @@ export interface ImprovementViewModel {
 }
 
 export interface ImprovementOpportunityViewModel {
-  axis: 'harness' | 'size' | 'intervention' | 'parallelism';
+  axis: 'harness' | 'size' | 'intervention' | 'parallelism' | 'velocity';
   field: string;
   currentLevel: LevelViewModel;
   resultingLevel: LevelViewModel;
@@ -59,6 +60,12 @@ export interface ImprovementOpportunityViewModel {
 export interface FormatWarningViewModel {
   field: string;
   reason: string;
+}
+
+export interface AxisReadinessViewModel {
+  calculable: boolean;
+  missingEssential: string[];
+  missingImpacting: string[];
 }
 
 export type MissingDataAxisViewModel = 'profile' | ImprovementAxis;

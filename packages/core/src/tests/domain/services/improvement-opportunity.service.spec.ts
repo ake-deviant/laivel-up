@@ -8,10 +8,14 @@ import { createInterventionLevelCalculator } from '../../../domain/services/inte
 import { defaultInterventionThresholdsConfig } from '../../../domain/services/intervention-thresholds.config';
 import { createWeightedParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
 import { defaultParallelismThresholdsConfig } from '../../../domain/services/parallelism-thresholds.config';
+import { createVelocityLevelCalculator } from '../../../domain/services/velocity-level-calculator.service';
+import { VelocityReadinessChecker } from '../../../domain/services/velocity-readiness-checker';
+import { defaultVelocityThresholdsConfig } from '../../../domain/services/velocity-thresholds.config';
 
 import { SizeImprovementOpportunityDetector } from '../../../domain/services/size-improvement-opportunity-detector';
 import { InterventionImprovementOpportunityDetector } from '../../../domain/services/intervention-improvement-opportunity-detector';
 import { ParallelismImprovementOpportunityDetector } from '../../../domain/services/parallelism-improvement-opportunity-detector';
+import { VelocityImprovementOpportunityDetector } from '../../../domain/services/velocity-improvement-opportunity-detector';
 import { ImprovementOpportunityService } from '../../../domain/services/improvement-opportunity.service';
 import { LaivelUpDeveloperProfileInputFixture } from '../../fixtures/laivel-up-developer-profile-input.fixture';
 
@@ -34,6 +38,12 @@ function makeService() {
       createWeightedParallelismLevelCalculator(defaultParallelismThresholdsConfig),
       defaultParallelismThresholdsConfig,
     ),
+    new VelocityImprovementOpportunityDetector(
+      createVelocityLevelCalculator(defaultVelocityThresholdsConfig),
+      defaultVelocityThresholdsConfig,
+    ),
+    createVelocityLevelCalculator(defaultVelocityThresholdsConfig),
+    new VelocityReadinessChecker(),
   );
 }
 

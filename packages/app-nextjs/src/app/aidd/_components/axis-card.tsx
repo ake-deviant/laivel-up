@@ -4,10 +4,11 @@ import { LevelScale } from './level-scale';
 import { LevelMedal } from './level-medal';
 
 const AXIS_DESCRIPTION: Record<AxisViewModel['axis'], string> = {
-  size: 'Taille habituelle des réalisations confiées à l’IA',
+  size: "Taille habituelle des réalisations confiées à l'IA",
   harness: 'Contexte, configuration et boucles autour du modèle',
   intervention: 'Niveau de reprise humaine pendant la réalisation',
   parallelism: 'Capacité à faire progresser plusieurs travaux à la fois',
+  velocity: 'Cadence de livraison comparée à la référence équipe',
 };
 
 function formatSignalValue(name: string, value: number | boolean | null) {
@@ -72,7 +73,7 @@ export function AxisCard({ axis, profileId }: { axis: AxisViewModel; profileId: 
         className="mt-6 flex items-center justify-between rounded-2xl bg-stone-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-stone-800"
       >
         <span>Explorer cet axe</span>
-        <span aria-hidden="true">→</span>
+        <span aria-hidden="true">&rarr;</span>
       </Link>
     </article>
   );

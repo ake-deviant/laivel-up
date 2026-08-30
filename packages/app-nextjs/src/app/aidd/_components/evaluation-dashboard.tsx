@@ -58,7 +58,7 @@ export function EvaluationDashboard() {
         `/aidd?profile=${encodeURIComponent(normalizedProfileId)}`,
       );
     } catch {
-      setError('Le service d’évaluation ne répond pas. Réessaie dans un instant.');
+      setError("Le service d'évaluation ne répond pas. Réessaie dans un instant.");
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +110,7 @@ export function EvaluationDashboard() {
               Comprendre où se situe une pratique AI-Driven Development.
             </h1>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Le résultat croise quatre axes observables. Le `level` global correspond au niveau
+              Le résultat croise cinq axes observables. Le `level` global correspond au niveau
               commun réellement atteint.
             </p>
           </div>
@@ -152,12 +152,13 @@ export function EvaluationDashboard() {
         )}
 
         {!result && !error && (
-          <section className="mt-14 grid grid-cols-4 gap-4 border-t border-stone-300 pt-8">
+          <section className="mt-14 grid grid-cols-5 gap-4 border-t border-stone-300 pt-8">
             {[
               ['01', 'size', 'Taille des réalisations'],
-              ['02', 'harness', 'Environnement de l’IA'],
+              ['02', 'harness', "Environnement de l'IA"],
               ['03', 'intervention', 'Reprises humaines'],
               ['04', 'parallelism', 'Travaux simultanés'],
+              ['05', 'velocity', 'Cadence de livraison'],
             ].map(([number, axis, description]) => (
               <div key={axis} className="rounded-2xl border border-stone-200 bg-[#fbfaf7] p-5">
                 <p className="text-xs font-bold text-stone-400">{number}</p>
@@ -198,8 +199,7 @@ export function EvaluationDashboard() {
                     Lecture du résultat
                   </p>
                   <p className="text-2xl font-semibold leading-snug tracking-tight">
-                    Les quatre axes doivent progresser ensemble : le plus bas fixe le `level`
-                    global.
+                    Les cinq axes doivent progresser ensemble : le plus bas fixe le `level` global.
                   </p>
                 </div>
               </div>
@@ -216,7 +216,7 @@ export function EvaluationDashboard() {
                       Certaines valeurs ont un format inattendu
                     </h2>
                     <p className="mt-2 text-sm leading-6 text-stone-600">
-                      L’évaluation continue avec ces valeurs considérées comme non collectées.
+                      L'évaluation continue avec ces valeurs considérées comme non collectées.
                     </p>
                   </div>
                   <span className="rounded-full bg-amber-200 px-3 py-1.5 text-xs font-bold text-amber-900">
@@ -246,7 +246,7 @@ export function EvaluationDashboard() {
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
                     Analyse détaillée
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Les quatre axes</h2>
+                  <h2 className="mt-2 text-3xl font-semibold tracking-tight">Les cinq axes</h2>
                 </div>
                 <p className="max-w-md text-right text-sm leading-6 text-stone-500">
                   Un point vert indique un signal validé pour le prochain `level`. Les valeurs
@@ -285,7 +285,7 @@ export function EvaluationDashboard() {
                 </ul>
               ) : (
                 <p className="mt-5 rounded-2xl bg-white px-5 py-4 text-sm text-stone-500">
-                  Aucune piste d’amélioration n’est remontée pour ce profil.
+                  Aucune piste d'amélioration n'est remontée pour ce profil.
                 </p>
               )}
               {result.improvementOpportunities.length > 0 && (

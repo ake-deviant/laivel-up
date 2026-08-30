@@ -5,12 +5,16 @@ import { IInterventionLevelCalculator } from './intervention-level-calculator.se
 import { ImprovementFieldDefinitionRegistry } from './improvement-field-definition-registry';
 import { IParallelismLevelCalculator } from './parallelism-level-calculator.service';
 import { ISizeLevelCalculator } from './size-level-calculator.service';
+import { IVelocityLevelCalculator } from './velocity-level-calculator.service';
 import { SizeImprovementOpportunityDetector } from './size-improvement-opportunity-detector';
 import { InterventionImprovementOpportunityDetector } from './intervention-improvement-opportunity-detector';
 import { ParallelismImprovementOpportunityDetector } from './parallelism-improvement-opportunity-detector';
+import { VelocityImprovementOpportunityDetector } from './velocity-improvement-opportunity-detector';
 import { IImprovementOpportunityService } from '../ports/improvement-opportunity-service.port';
+import { IAxisReadinessChecker } from '../ports/axis-readiness-checker.port';
+import { VelocityProfile } from '../entities/velocity-profile';
 
-export type OpportunityAxis = 'harness' | 'size' | 'intervention' | 'parallelism';
+export type OpportunityAxis = 'harness' | 'size' | 'intervention' | 'parallelism' | 'velocity';
 
 export interface ImprovementOpportunity {
   axis: OpportunityAxis;
@@ -49,6 +53,9 @@ export class ImprovementOpportunityService implements IImprovementOpportunitySer
     private readonly sizeDetector: SizeImprovementOpportunityDetector,
     private readonly interventionDetector: InterventionImprovementOpportunityDetector,
     private readonly parallelismDetector: ParallelismImprovementOpportunityDetector,
+    private readonly velocityDetector: VelocityImprovementOpportunityDetector,
+    private readonly velocityCalculator: IVelocityLevelCalculator,
+    private readonly velocityReadinessChecker: IAxisReadinessChecker<VelocityProfile>,
     private readonly registry = new ImprovementFieldDefinitionRegistry(),
   ) {}
 
@@ -57,18 +64,26 @@ export class ImprovementOpportunityService implements IImprovementOpportunitySer
     const currentHarnessLevel = this.harnessCalculator.calculate(profile.harness);
     const currentInterventionLevel = this.interventionCalculator.calculate(profile.intervention);
     const currentParallelismLevel = this.parallelismCalculator.calculate(profile.parallelism);
-    const currentOverallLevel = lowestLevel(
+    const velocityReadiness = this.velocityReadinessChecker.check(profile.velocity);
+    const currentVelocityLevel = velocityReadiness.calculable
+      ? this.velocityCalculator.calculate(profile.velocity)
+      : null;
+
+    const axisLevels: AiddLevelValue[] = [
       currentSizeLevel,
       currentHarnessLevel,
       currentInterventionLevel,
       currentParallelismLevel,
-    );
+    ];
+    if (currentVelocityLevel) axisLevels.push(currentVelocityLevel);
+    const currentOverallLevel = lowestLevel(...axisLevels);
 
     const candidates: PartialOpportunity[] = [
       ...this.detectHarness(profile, currentHarnessLevel),
       ...this.sizeDetector.detect(profile.size),
       ...this.interventionDetector.detect(profile.intervention),
       ...this.parallelismDetector.detect(profile.parallelism),
+      ...(velocityReadiness.calculable ? this.velocityDetector.detect(profile.velocity) : []),
     ];
 
     return candidates
@@ -83,12 +98,16 @@ export class ImprovementOpportunityService implements IImprovementOpportunitySer
             : currentInterventionLevel;
         const newParallelismLevel =
           opportunity.axis === 'parallelism' ? opportunity.resultingLevel : currentParallelismLevel;
-        const overallResultingLevel = lowestLevel(
+        const newVelocityLevel =
+          opportunity.axis === 'velocity' ? opportunity.resultingLevel : currentVelocityLevel;
+        const newAxisLevels: AiddLevelValue[] = [
           newSizeLevel,
           newHarnessLevel,
           newInterventionLevel,
           newParallelismLevel,
-        );
+        ];
+        if (newVelocityLevel) newAxisLevels.push(newVelocityLevel);
+        const overallResultingLevel = lowestLevel(...newAxisLevels);
         return {
           ...opportunity,
           overallResultingLevel,

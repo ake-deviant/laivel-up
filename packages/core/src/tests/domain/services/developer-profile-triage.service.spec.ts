@@ -40,6 +40,12 @@ describe('Developer profile triage service', () => {
       'parallelism.maxConcurrentBranches',
       'parallelism.medianConcurrentBranches',
       'parallelism.hasWorktreeInclude',
+      'velocity.sprintCount',
+      'velocity.storyPointsPerSprint',
+      'velocity.teamAvgStoryPointsPerSprint',
+      'velocity.completionRate',
+      'velocity.medianDaysTicketToPr',
+      'velocity.teamAvgMedianDaysTicketToPr',
     ]);
     expect(report.ignoredNulls).toEqual([
       'profile.role',
@@ -48,6 +54,8 @@ describe('Developer profile triage service', () => {
       'profile.teamSize',
       'profile.note',
       'intervention.totalPrCount',
+      'velocity.featuresPerSprint',
+      'velocity.bugsPerSprint',
     ]);
   });
 

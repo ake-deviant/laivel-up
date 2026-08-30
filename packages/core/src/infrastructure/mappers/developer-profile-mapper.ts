@@ -5,9 +5,11 @@ import { InterventionProfile } from '../../domain/entities/intervention-profile'
 import { ParallelismProfile } from '../../domain/entities/parallelism-profile';
 import { Profile } from '../../domain/entities/profile';
 import { SizeProfile } from '../../domain/entities/size-profile';
+import { VelocityProfile } from '../../domain/entities/velocity-profile';
 import { LaivelUpAiContextInput } from '../inputs/laivel-up-ai-context-input';
 import { LaivelUpGitActivityInput } from '../inputs/laivel-up-git-activity-input';
 import { LaivelUpProfileInput } from '../inputs/laivel-up-profile-input';
+import { LaivelUpSprintMetricsInput } from '../inputs/laivel-up-sprint-metrics-input';
 
 const AVAILABLE_TO_DATA_SOURCE: Partial<Record<string, DataSource>> = {
   'git-activity.json': DataSource.gitActivity,
@@ -23,6 +25,7 @@ export class DeveloperProfileMapper {
   static toDomain(input: LaivelUpProfileInput): DeveloperProfile {
     const gitActivity = input.gitActivity ?? null;
     const aiContext = input.aiContext ?? null;
+    const sprintMetrics = input.sprintMetrics ?? null;
 
     return {
       id: input.profile_id,
@@ -32,6 +35,7 @@ export class DeveloperProfileMapper {
       harness: mapHarness(gitActivity, aiContext),
       intervention: mapIntervention(gitActivity),
       parallelism: mapParallelism(gitActivity, aiContext),
+      velocity: mapVelocity(sprintMetrics),
     };
   }
 }
@@ -136,5 +140,20 @@ function mapParallelism(
     maxConcurrentBranches: gitActivity?.parallelism?.max_concurrent_branches ?? null,
     medianConcurrentBranches: gitActivity?.parallelism?.median_concurrent_branches ?? null,
     hasWorktreeInclude: aiContext ? aiContext.hasWorktreeInclude : null,
+  };
+}
+
+function mapVelocity(sprintMetrics: LaivelUpSprintMetricsInput | null): VelocityProfile {
+  return {
+    sprintCount: sprintMetrics?.period?.sprint_count ?? null,
+    storyPointsPerSprint: sprintMetrics?.throughput?.story_points_per_sprint ?? null,
+    teamAvgStoryPointsPerSprint:
+      sprintMetrics?.throughput?.team_avg_story_points_per_sprint ?? null,
+    completionRate: sprintMetrics?.throughput?.completion_rate ?? null,
+    medianDaysTicketToPr: sprintMetrics?.cycle_time?.median_days_ticket_to_pr ?? null,
+    teamAvgMedianDaysTicketToPr:
+      sprintMetrics?.cycle_time?.team_avg_median_days_ticket_to_pr ?? null,
+    featuresPerSprint: sprintMetrics?.scope?.features_per_sprint ?? null,
+    bugsPerSprint: sprintMetrics?.scope?.bugs_per_sprint ?? null,
   };
 }

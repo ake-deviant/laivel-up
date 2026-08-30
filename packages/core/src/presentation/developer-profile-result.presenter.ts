@@ -40,6 +40,7 @@ const AXIS_LABEL: Record<ImprovementAxis, string> = {
   harness: 'Harness',
   intervention: 'Intervention',
   parallelism: 'Parallèle',
+  velocity: 'Vélocité',
 };
 
 const toLevel = (value: AiddLevelValue): LevelViewModel => ({
@@ -64,6 +65,10 @@ const SIGNAL_LABEL: Record<string, string> = {
   humanCommitRatio: 'Commits humains',
   mergedWithoutHumanEditRatio: 'Sans édition humaine',
   medianReviewCommentsReceived: 'Commentaires de review',
+  leverageRatio: 'Levier vélocité',
+  completionRate: 'Taux de complétion',
+  cycleTimeRatio: 'Ratio cycle time',
+  featureRatio: 'Ratio features',
 };
 
 const toSignals = (matrix: AxisSignalMatrix | undefined): SignalViewModel[] => {
@@ -149,6 +154,26 @@ const IMPROVEMENT_PRESENTATION: Record<string, { label: string; description: str
   medianReviewCommentsReceived: {
     label: 'Réduire les retours de review',
     description: 'Diminuer le nombre médian de commentaires reçus pendant la revue des PRs.',
+  },
+  leverageRatio: {
+    label: 'Augmenter la cadence de livraison',
+    description:
+      "Livrer plus de story points par sprint relativement à la moyenne équipe — signal principal de l'axe vélocité.",
+  },
+  completionRate: {
+    label: 'Améliorer le taux de complétion des sprints',
+    description:
+      'Terminer une plus grande part des tickets engagés dans le sprint — reflet de la fiabilité de livraison.',
+  },
+  cycleTimeRatio: {
+    label: 'Réduire le cycle time',
+    description:
+      "Diminuer le délai médian entre la création d'un ticket et l'ouverture de la PR, pour passer sous la médiane équipe.",
+  },
+  featureRatio: {
+    label: 'Orienter davantage le travail vers les features',
+    description:
+      'Augmenter la part des livraisons orientées valeur (features) par rapport aux corrections de bugs.',
   },
 };
 
@@ -423,6 +448,77 @@ const toParallelismFieldGroups = (
   },
 ];
 
+const toVelocityFieldGroups = (
+  profile: DeveloperProfileResult['axisProfiles']['velocity'],
+): AxisFieldGroupViewModel[] => [
+  {
+    name: 'throughput',
+    label: 'Cadence',
+    fields: [
+      field(
+        'sprintCount',
+        'Nombre de sprints',
+        'Nombre de sprints analysés — fenêtre de calcul de la vélocité',
+        profile.sprintCount,
+      ),
+      field(
+        'storyPointsPerSprint',
+        'Story points par sprint',
+        'Nombre moyen de points livrés par le développeur par sprint sur la période',
+        profile.storyPointsPerSprint,
+      ),
+      field(
+        'teamAvgStoryPointsPerSprint',
+        'Moyenne équipe (story points)',
+        'Référence équipe — utilisée pour calculer le ratio de levier',
+        profile.teamAvgStoryPointsPerSprint,
+      ),
+      field(
+        'completionRate',
+        'Taux de complétion',
+        'Part des tickets commencés et terminés dans le sprint — 1.0 = tout livré dans le sprint engagé',
+        profile.completionRate,
+      ),
+    ],
+  },
+  {
+    name: 'cycleTime',
+    label: 'Cycle time',
+    fields: [
+      field(
+        'medianDaysTicketToPr',
+        'Jours ticket → PR (médiane)',
+        "Délai médian entre la création d'un ticket et l'ouverture de la PR associée",
+        profile.medianDaysTicketToPr,
+      ),
+      field(
+        'teamAvgMedianDaysTicketToPr',
+        'Référence équipe (cycle time)',
+        'Délai médian équipe — utilisé pour calculer le ratio de cycle time',
+        profile.teamAvgMedianDaysTicketToPr,
+      ),
+    ],
+  },
+  {
+    name: 'scope',
+    label: 'Périmètre',
+    fields: [
+      field(
+        'featuresPerSprint',
+        'Features par sprint',
+        'Nombre moyen de features livrées par sprint sur la période',
+        profile.featuresPerSprint,
+      ),
+      field(
+        'bugsPerSprint',
+        'Bugs par sprint',
+        'Nombre moyen de corrections de bugs livrées par sprint — indicateur de la dette réactive',
+        profile.bugsPerSprint,
+      ),
+    ],
+  },
+];
+
 interface MissingDataCatalogEntry {
   axis: MissingDataAxisViewModel;
   field: MissingDataFieldViewModel;
@@ -496,6 +592,7 @@ const toMissingDataGroups = (
     'harness',
     'intervention',
     'parallelism',
+    'velocity',
   ];
   const groupLabel: Record<MissingDataAxisViewModel, string> = {
     profile: 'Profil',
@@ -527,6 +624,7 @@ export class DeveloperProfileResultPresenter {
         axis: 'size',
         label: AXIS_LABEL.size,
         level: toLevel(result.sizeLevel),
+        calculable: true,
         signals: toSignals(matrixByAxis.get('size')),
         fieldGroups: toSizeFieldGroups(result.axisProfiles.size),
       },
@@ -534,6 +632,7 @@ export class DeveloperProfileResultPresenter {
         axis: 'harness',
         label: AXIS_LABEL.harness,
         level: toLevel(result.harnessLevel),
+        calculable: true,
         signals: toSignals(matrixByAxis.get('harness')),
         fieldGroups: toHarnessFieldGroups(result.axisProfiles.harness),
       },
@@ -541,6 +640,7 @@ export class DeveloperProfileResultPresenter {
         axis: 'intervention',
         label: AXIS_LABEL.intervention,
         level: toLevel(result.interventionLevel),
+        calculable: true,
         signals: toSignals(matrixByAxis.get('intervention')),
         fieldGroups: toInterventionFieldGroups(result.axisProfiles.intervention),
       },
@@ -548,8 +648,17 @@ export class DeveloperProfileResultPresenter {
         axis: 'parallelism',
         label: AXIS_LABEL.parallelism,
         level: toLevel(result.parallelismLevel),
+        calculable: true,
         signals: toSignals(matrixByAxis.get('parallelism')),
         fieldGroups: toParallelismFieldGroups(result.axisProfiles.parallelism),
+      },
+      {
+        axis: 'velocity',
+        label: AXIS_LABEL.velocity,
+        level: toLevel(result.velocityLevel),
+        calculable: result.velocityReadiness.calculable,
+        signals: toSignals(matrixByAxis.get('velocity')),
+        fieldGroups: toVelocityFieldGroups(result.axisProfiles.velocity),
       },
     ];
 

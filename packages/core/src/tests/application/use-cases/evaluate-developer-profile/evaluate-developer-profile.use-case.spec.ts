@@ -16,6 +16,8 @@ import { SizeProfile } from '../../../../domain/entities/size-profile';
 import { HarnessProfile } from '../../../../domain/entities/harness-profile';
 import { InterventionProfile } from '../../../../domain/entities/intervention-profile';
 import { ParallelismProfile } from '../../../../domain/entities/parallelism-profile';
+import { VelocityProfile } from '../../../../domain/entities/velocity-profile';
+import { VelocityReadinessChecker } from '../../../../domain/services/velocity-readiness-checker';
 
 class InMemoryDeveloperProfileRepository implements IDeveloperProfileRepository {
   constructor(private readonly result: Result<DeveloperProfileRepositoryResult, ParseError>) {}
@@ -41,11 +43,14 @@ const stubResult: DeveloperProfileResult = {
   harnessLevel: AiddLevelValue.white,
   interventionLevel: AiddLevelValue.white,
   parallelismLevel: AiddLevelValue.white,
+  velocityLevel: AiddLevelValue.white,
+  velocityReadiness: { calculable: false, missingEssential: [], missingImpacting: [] },
   axisProfiles: {
     size: DeveloperProfileFixture.valid().size,
     harness: DeveloperProfileFixture.valid().harness,
     intervention: DeveloperProfileFixture.valid().intervention,
     parallelism: DeveloperProfileFixture.valid().parallelism,
+    velocity: DeveloperProfileFixture.valid().velocity,
   },
   signalMatrices: [],
   improvements: [],
@@ -68,6 +73,8 @@ function makeUseCase(repo: IDeveloperProfileRepository) {
     stubDetector<HarnessProfile>('harness'),
     stubDetector<InterventionProfile>('intervention'),
     stubDetector<ParallelismProfile>('parallelism'),
+    stubDetector<VelocityProfile>('velocity'),
+    new VelocityReadinessChecker(),
     new AxisImprovementService(),
   );
 }
@@ -130,7 +137,7 @@ describe('EvaluateDeveloperProfileUseCase', () => {
 
     expect(result.isOk).toBe(true);
     if (result.isOk) {
-      expect(result.value.impactingNulls).toHaveLength(30);
+      expect(result.value.impactingNulls).toHaveLength(36);
       expect(result.value.ignoredNulls).toEqual([
         'profile.role',
         'profile.experienceYears',
@@ -138,6 +145,8 @@ describe('EvaluateDeveloperProfileUseCase', () => {
         'profile.teamSize',
         'profile.note',
         'intervention.totalPrCount',
+        'velocity.featuresPerSprint',
+        'velocity.bugsPerSprint',
       ]);
     }
   });

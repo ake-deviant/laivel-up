@@ -9,6 +9,7 @@ import { laivelUpGitActivityInputSchema } from '../inputs/laivel-up-git-activity
 import { laivelUpProfileInputSchema } from '../inputs/laivel-up-profile-input';
 import { laivelUpPullRequestInputSchema } from '../inputs/laivel-up-pull-request-input';
 import { laivelUpSonarMeasuresInputSchema } from '../inputs/laivel-up-sonar-measures-input';
+import { laivelUpSprintMetricsInputSchema } from '../inputs/laivel-up-sprint-metrics-input';
 
 const BLOCKING_FIELDS = new Set(['profile_id', 'available']);
 
@@ -23,6 +24,7 @@ const permissiveSchema = z.object({
   gitActivity: laivelUpGitActivityInputSchema.nullable().optional().catch(null),
   pullRequests: z.array(laivelUpPullRequestInputSchema).nullable().optional().catch(null),
   sonarMeasures: laivelUpSonarMeasuresInputSchema.nullable().optional().catch(null),
+  sprintMetrics: laivelUpSprintMetricsInputSchema.nullable().optional().catch(null),
   aiContext: laivelUpAiContextInputSchema.nullable().optional().catch(null),
   declaratif: z.string().nullable().optional().catch(null),
   session: z.string().nullable().optional().catch(null),

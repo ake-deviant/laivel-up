@@ -15,6 +15,7 @@ export type { SizeProfile } from './domain/entities/size-profile';
 export type { HarnessProfile } from './domain/entities/harness-profile';
 export type { InterventionProfile } from './domain/entities/intervention-profile';
 export type { ParallelismProfile } from './domain/entities/parallelism-profile';
+export type { VelocityProfile } from './domain/entities/velocity-profile';
 
 // Domain ports
 export type {
@@ -23,6 +24,10 @@ export type {
 } from './domain/ports/level-improvement-bus.port';
 export { noopLevelImprovementBus } from './domain/ports/level-improvement-bus.port';
 export type { IAxisSignalDetector } from './domain/ports/axis-signal-detector.port';
+export type {
+  IAxisReadinessChecker,
+  AxisReadiness,
+} from './domain/ports/axis-readiness-checker.port';
 
 // Domain services
 export { ImprovementCollector } from './domain/services/improvement-collector';
@@ -43,6 +48,11 @@ export { createSizeSignalDetector } from './domain/services/size-signal-detector
 export { createHarnessSignalDetector } from './domain/services/harness-signal-detector';
 export { createInterventionSignalDetector } from './domain/services/intervention-signal-detector';
 export { createParallelismSignalDetector } from './domain/services/parallelism-signal-detector';
+export { createVelocitySignalDetector } from './domain/services/velocity-signal-detector';
+export { createVelocityLevelCalculator } from './domain/services/velocity-level-calculator.service';
+export type { IVelocityLevelCalculator } from './domain/services/velocity-level-calculator.service';
+export { defaultVelocityThresholdsConfig } from './domain/services/velocity-thresholds.config';
+export { VelocityReadinessChecker } from './domain/services/velocity-readiness-checker';
 export { AxisImprovementService } from './domain/services/axis-improvement.service';
 export { ImprovementOpportunityService } from './domain/services/improvement-opportunity.service';
 export type {
@@ -54,6 +64,7 @@ export type { ImprovementFieldDefinition } from './domain/services/improvement-f
 export { SizeImprovementOpportunityDetector } from './domain/services/size-improvement-opportunity-detector';
 export { InterventionImprovementOpportunityDetector } from './domain/services/intervention-improvement-opportunity-detector';
 export { ParallelismImprovementOpportunityDetector } from './domain/services/parallelism-improvement-opportunity-detector';
+export { VelocityImprovementOpportunityDetector } from './domain/services/velocity-improvement-opportunity-detector';
 export type {
   IImprovementOpportunityService,
   IAxisImprovementOpportunityDetector,
@@ -82,6 +93,7 @@ export type {
   DeveloperProfileResultViewModel,
   LevelViewModel,
   AxisViewModel,
+  AxisReadinessViewModel,
   ImprovementViewModel,
   ImprovementOpportunityViewModel,
   SignalViewModel,

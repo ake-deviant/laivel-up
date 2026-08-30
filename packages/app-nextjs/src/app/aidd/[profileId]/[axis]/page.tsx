@@ -2,7 +2,13 @@ import { notFound } from 'next/navigation';
 import type { AxisViewModel } from '@laivel-up/core';
 import { AxisDetail } from '../../_components/axis-detail';
 
-const AXES: AxisViewModel['axis'][] = ['size', 'harness', 'intervention', 'parallelism'];
+const AXES: AxisViewModel['axis'][] = [
+  'size',
+  'harness',
+  'intervention',
+  'parallelism',
+  'velocity',
+];
 
 interface AxisPageProps {
   params: Promise<{ profileId: string; axis: string }>;

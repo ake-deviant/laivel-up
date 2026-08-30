@@ -18,14 +18,19 @@ import {
   defaultSizeThresholdsConfig,
   createHarnessLevelCalculator,
   defaultHarnessThresholdsConfig,
+  createVelocityLevelCalculator,
+  defaultVelocityThresholdsConfig,
+  VelocityReadinessChecker,
   createSizeSignalDetector,
   createHarnessSignalDetector,
   createInterventionSignalDetector,
   createParallelismSignalDetector,
+  createVelocitySignalDetector,
   IHarnessLevelCalculator,
   IInterventionLevelCalculator,
   IParallelismLevelCalculator,
   ISizeLevelCalculator,
+  IVelocityLevelCalculator,
   IAxisSignalDetector,
   IDeveloperProfileRepository,
   IDeveloperProfileEvaluator,
@@ -33,6 +38,9 @@ import {
   HarnessProfile,
   InterventionProfile,
   ParallelismProfile,
+  VelocityProfile,
+  VelocityImprovementOpportunityDetector,
+  IAxisReadinessChecker,
 } from '@laivel-up/core';
 import { DI } from './di';
 
@@ -67,6 +75,10 @@ container
   .toFactory(() => createHarnessLevelCalculator(defaultHarnessThresholdsConfig));
 
 container
+  .bind(DI.VELOCITY_LEVEL_CALCULATOR)
+  .toFactory(() => createVelocityLevelCalculator(defaultVelocityThresholdsConfig));
+
+container
   .bind(DI.SIZE_SIGNAL_DETECTOR)
   .toFactory(() => createSizeSignalDetector(defaultSizeThresholdsConfig));
 
@@ -81,6 +93,10 @@ container
 container
   .bind(DI.PARALLELISM_SIGNAL_DETECTOR)
   .toFactory(() => createParallelismSignalDetector(defaultParallelismThresholdsConfig));
+
+container
+  .bind(DI.VELOCITY_SIGNAL_DETECTOR)
+  .toFactory(() => createVelocitySignalDetector(defaultVelocityThresholdsConfig));
 
 container.bind(DI.AXIS_IMPROVEMENT_SERVICE).toClass(AxisImprovementService, []);
 container.bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE).toFactory((resolve: ResolveFunction) => {
@@ -99,6 +115,12 @@ container.bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE).toFactory((resolve: ResolveFu
       r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
       defaultParallelismThresholdsConfig,
     ),
+    new VelocityImprovementOpportunityDetector(
+      r<IVelocityLevelCalculator>(resolve, DI.VELOCITY_LEVEL_CALCULATOR),
+      defaultVelocityThresholdsConfig,
+    ),
+    r<IVelocityLevelCalculator>(resolve, DI.VELOCITY_LEVEL_CALCULATOR),
+    new VelocityReadinessChecker(),
   );
 });
 
@@ -111,6 +133,8 @@ container
         r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
         r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
         r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
+        r<IVelocityLevelCalculator>(resolve, DI.VELOCITY_LEVEL_CALCULATOR),
+        new VelocityReadinessChecker(),
       ),
     'scoped',
   );
@@ -127,6 +151,8 @@ container
         r<IAxisSignalDetector<HarnessProfile>>(resolve, DI.HARNESS_SIGNAL_DETECTOR),
         r<IAxisSignalDetector<InterventionProfile>>(resolve, DI.INTERVENTION_SIGNAL_DETECTOR),
         r<IAxisSignalDetector<ParallelismProfile>>(resolve, DI.PARALLELISM_SIGNAL_DETECTOR),
+        r<IAxisSignalDetector<VelocityProfile>>(resolve, DI.VELOCITY_SIGNAL_DETECTOR),
+        new VelocityReadinessChecker() as IAxisReadinessChecker<VelocityProfile>,
         r<AxisImprovementService>(resolve, DI.AXIS_IMPROVEMENT_SERVICE),
         r<ImprovementOpportunityService>(resolve, DI.IMPROVEMENT_OPPORTUNITY_SERVICE),
       ),

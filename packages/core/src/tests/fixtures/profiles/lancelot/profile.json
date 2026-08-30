@@ -1,0 +1,9 @@
+{
+  "profile_id": "lancelot",
+  "role": "développeur senior",
+  "experience_years": 8,
+  "stack": ["TypeScript", "React", "Node.js"],
+  "team_size": 4,
+  "note": "Excellente maîtrise de l'IA sur tous les axes — cadence de livraison en dessous de la moyenne équipe.",
+  "available": ["git-activity.json", "sprint-metrics.json", "repo-context/"]
+}

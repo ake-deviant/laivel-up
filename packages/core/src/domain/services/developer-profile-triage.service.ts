@@ -112,6 +112,24 @@ export class DeveloperProfileTriageService {
       path: 'parallelism.hasWorktreeInclude',
       read: (profile) => profile.parallelism.hasWorktreeInclude,
     },
+    { path: 'velocity.sprintCount', read: (profile) => profile.velocity.sprintCount },
+    {
+      path: 'velocity.storyPointsPerSprint',
+      read: (profile) => profile.velocity.storyPointsPerSprint,
+    },
+    {
+      path: 'velocity.teamAvgStoryPointsPerSprint',
+      read: (profile) => profile.velocity.teamAvgStoryPointsPerSprint,
+    },
+    { path: 'velocity.completionRate', read: (profile) => profile.velocity.completionRate },
+    {
+      path: 'velocity.medianDaysTicketToPr',
+      read: (profile) => profile.velocity.medianDaysTicketToPr,
+    },
+    {
+      path: 'velocity.teamAvgMedianDaysTicketToPr',
+      read: (profile) => profile.velocity.teamAvgMedianDaysTicketToPr,
+    },
   ];
 
   private readonly ignoredFields: DeveloperProfileField[] = [
@@ -127,6 +145,8 @@ export class DeveloperProfileTriageService {
       path: 'intervention.totalPrCount',
       read: (profile) => profile.intervention.totalPrCount,
     },
+    { path: 'velocity.featuresPerSprint', read: (profile) => profile.velocity.featuresPerSprint },
+    { path: 'velocity.bugsPerSprint', read: (profile) => profile.velocity.bugsPerSprint },
   ];
 
   triage(profile: DeveloperProfile): DeveloperProfileTriageReport {

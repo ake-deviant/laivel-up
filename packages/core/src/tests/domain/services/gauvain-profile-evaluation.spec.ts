@@ -5,6 +5,8 @@ import { SizeLevelCalculatorService } from '../../../domain/services/size-level-
 import { createHarnessLevelCalculator } from '../../../domain/services/harness-level-calculator.service';
 import { createInterventionLevelCalculator } from '../../../domain/services/intervention-level-calculator.service';
 import { createWeightedParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
+import { createVelocityLevelCalculator } from '../../../domain/services/velocity-level-calculator.service';
+import { VelocityReadinessChecker } from '../../../domain/services/velocity-readiness-checker';
 import { createSizeSignalDetector } from '../../../domain/services/size-signal-detector';
 import { createHarnessSignalDetector } from '../../../domain/services/harness-signal-detector';
 import { createInterventionSignalDetector } from '../../../domain/services/intervention-signal-detector';
@@ -14,6 +16,7 @@ import { defaultSizeThresholdsConfig } from '../../../domain/services/size-thres
 import { defaultHarnessThresholdsConfig } from '../../../domain/services/harness-thresholds.config';
 import { defaultInterventionThresholdsConfig } from '../../../domain/services/intervention-thresholds.config';
 import { defaultParallelismThresholdsConfig } from '../../../domain/services/parallelism-thresholds.config';
+import { defaultVelocityThresholdsConfig } from '../../../domain/services/velocity-thresholds.config';
 import { LaivelUpDeveloperProfileInputFixture } from '../../fixtures/laivel-up-developer-profile-input.fixture';
 
 describe('Gauvain profile evaluation', () => {
@@ -25,6 +28,8 @@ describe('Gauvain profile evaluation', () => {
     createHarnessLevelCalculator(defaultHarnessThresholdsConfig),
     createInterventionLevelCalculator(defaultInterventionThresholdsConfig),
     createWeightedParallelismLevelCalculator(defaultParallelismThresholdsConfig),
+    createVelocityLevelCalculator(defaultVelocityThresholdsConfig),
+    new VelocityReadinessChecker(),
   );
 
   const result = evaluator.evaluate(profile);

@@ -25,6 +25,7 @@ export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepo
     const gitActivityPath = this.findFile(dirPath, 'git-activity.json');
     const pullRequestsPath = this.findFile(dirPath, 'pull-requests.json');
     const sonarPath = this.findFile(dirPath, 'sonar-measures.json');
+    const sprintMetricsPath = this.findFile(dirPath, 'sprint-metrics.json');
     const declaratifPath = this.findFile(dirPath, 'declaratif.md');
     const sessionPath = this.findFile(dirPath, 'session.md');
 
@@ -35,6 +36,9 @@ export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepo
         ? JSON.parse(fs.readFileSync(pullRequestsPath, 'utf-8'))
         : null,
       sonarMeasures: sonarPath ? JSON.parse(fs.readFileSync(sonarPath, 'utf-8')) : null,
+      sprintMetrics: sprintMetricsPath
+        ? JSON.parse(fs.readFileSync(sprintMetricsPath, 'utf-8'))
+        : null,
       aiContext: this.resolveAiContext(path.join(dirPath, 'repo-context')),
       declaratif: declaratifPath ? fs.readFileSync(declaratifPath, 'utf-8') : null,
       session: sessionPath ? fs.readFileSync(sessionPath, 'utf-8') : null,
