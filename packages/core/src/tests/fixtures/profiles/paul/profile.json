@@ -1,0 +1,8 @@
+{
+  "profile_id": "paul",
+  "role": "développeur backend",
+  "experience_years": 4,
+  "stack": ["TypeScript", "NestJS", "PostgreSQL"],
+  "team_size": 6,
+  "available": []
+}

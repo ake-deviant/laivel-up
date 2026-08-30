@@ -1,51 +1,12 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import type { DeveloperProfileResultViewModel, ImprovementViewModel } from '@laivel-up/core';
+import type { DeveloperProfileResultViewModel } from '@laivel-up/core';
 import { AxisCard } from './axis-card';
 import { getLevelPresentation } from './aidd-level';
 import { LevelScale } from './level-scale';
-
-const IMPROVEMENT_LABEL: Record<string, string> = {
-  hasWorktreeInclude: 'Configurer les worktrees Git pour soutenir le travail en parallèle',
-  worktree_data_missing: 'Renseigner les données liées aux worktrees Git',
-  worktree_not_configured: 'Configurer les worktrees Git pour atteindre le level suivant',
-  xl: 'Augmenter la part des réalisations de taille XL',
-  lXl: 'Augmenter la part des réalisations de taille L ou XL',
-  s: 'Consolider la livraison de réalisations de taille S',
-  m: 'Consolider la livraison de réalisations de taille M',
-  l: 'Consolider la livraison de réalisations de taille L',
-  contextEngineeringScore: 'Renforcer le contexte fourni à l’IA',
-  aiConfigurationScore: 'Enrichir la configuration des agents IA',
-  ciMedianRunsToGreen: 'Réduire le nombre de runs CI nécessaires',
-  medianCorrectionCommitsAfterOpen: 'Réduire les corrections après ouverture des PRs',
-  humanCommitRatio: 'Augmenter la part de travail produite avec l’IA',
-  mergedWithoutHumanEditRatio: 'Augmenter les PRs fusionnées sans retouche humaine',
-  medianReviewCommentsReceived: 'Réduire les retours nécessaires pendant la review',
-};
-
-function ImprovementCard({ improvement }: { improvement: ImprovementViewModel }) {
-  return (
-    <li className="flex items-center gap-4 rounded-2xl border border-stone-200 bg-white px-5 py-4">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-lime-100 text-lg text-lime-800">
-        ↗
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-400">
-          {improvement.axis}
-        </p>
-        <p className="mt-1 text-sm font-medium text-stone-800">
-          {IMPROVEMENT_LABEL[improvement.type] ?? improvement.type}
-        </p>
-      </div>
-      {improvement.targetLevel && (
-        <span className="shrink-0 rounded-full bg-stone-100 px-3 py-1 text-xs font-bold text-stone-600">
-          Objectif {improvement.targetLevel}
-        </span>
-      )}
-    </li>
-  );
-}
+import { MissingDataSummary } from './missing-data-summary';
+import { ImprovementCard } from './improvement-card';
 
 export function EvaluationDashboard() {
   const [profileId, setProfileId] = useState('');
@@ -225,6 +186,41 @@ export function EvaluationDashboard() {
                 </div>
               </div>
             </section>
+
+            {result.formatWarnings.length > 0 && (
+              <section className="rounded-[28px] border border-amber-200 bg-amber-50 p-7">
+                <div className="flex items-start justify-between gap-8">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-700">
+                      Données à vérifier
+                    </p>
+                    <h2 className="mt-2 text-2xl font-semibold tracking-tight text-stone-950">
+                      Certaines valeurs ont un format inattendu
+                    </h2>
+                    <p className="mt-2 text-sm leading-6 text-stone-600">
+                      L’évaluation continue avec ces valeurs considérées comme non collectées.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-amber-200 px-3 py-1.5 text-xs font-bold text-amber-900">
+                    {result.formatWarnings.length} warning
+                    {result.formatWarnings.length > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <ul className="mt-5 grid grid-cols-2 gap-3">
+                  {result.formatWarnings.map((warning) => (
+                    <li
+                      key={`${warning.field}-${warning.reason}`}
+                      className="rounded-2xl border border-amber-200 bg-white px-5 py-4"
+                    >
+                      <code className="text-xs font-bold text-amber-800">{warning.field}</code>
+                      <p className="mt-2 text-sm text-stone-600">{warning.reason}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            <MissingDataSummary groups={result.missingDataGroups} profileId={evaluatedProfileId} />
 
             <section>
               <div className="mb-5 flex items-end justify-between">

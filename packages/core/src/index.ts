@@ -47,7 +47,10 @@ export { AxisImprovementService } from './domain/services/axis-improvement.servi
 
 // Application ports
 export type { IProfileParser } from './application/ports/profile-parser.port';
-export type { IDeveloperProfileRepository } from './application/ports/developer-profile-repository.port';
+export type {
+  IDeveloperProfileRepository,
+  DeveloperProfileRepositoryResult,
+} from './application/ports/developer-profile-repository.port';
 
 // Domain ports
 export type { IDeveloperProfileEvaluator } from './domain/ports/developer-profile-evaluator.port';
@@ -69,4 +72,8 @@ export type {
   SignalViewModel,
   AxisFieldViewModel,
   AxisFieldGroupViewModel,
+  FormatWarningViewModel,
+  MissingDataAxisViewModel,
+  MissingDataFieldViewModel,
+  MissingDataGroupViewModel,
 } from './presentation/developer-profile-result.view-model';

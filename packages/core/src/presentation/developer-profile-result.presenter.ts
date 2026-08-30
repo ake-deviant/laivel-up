@@ -9,6 +9,9 @@ import {
   ImprovementViewModel,
   SignalViewModel,
   AxisFieldGroupViewModel,
+  MissingDataAxisViewModel,
+  MissingDataFieldViewModel,
+  MissingDataGroupViewModel,
 } from './developer-profile-result.view-model';
 
 const LEVEL_LABEL: Record<AiddLevelValue, string> = {
@@ -70,6 +73,94 @@ const toSignals = (matrix: AxisSignalMatrix | undefined): SignalViewModel[] => {
     validated: s.validated,
     value: s.value,
   }));
+};
+
+const IMPROVEMENT_PRESENTATION: Record<string, { label: string; description: string }> = {
+  hasWorktreeInclude: {
+    label: 'Configurer les worktrees Git',
+    description: 'Partager la configuration IA entre plusieurs worktrees actifs.',
+  },
+  worktree_data_missing: {
+    label: 'Renseigner les données liées aux worktrees Git',
+    description: 'Collecter les informations nécessaires pour évaluer le travail en parallèle.',
+  },
+  worktree_not_configured: {
+    label: 'Configurer les worktrees Git',
+    description:
+      'Mettre en place les worktrees nécessaires pour progresser vers le niveau suivant.',
+  },
+  medianConcurrentBranches: {
+    label: 'Développer le travail en parallèle',
+    description:
+      "Augmenter le nombre médian de branches ouvertes simultanément, reflet de l'habitude réelle sans être faussé par un pic isolé.",
+  },
+  maxConcurrentBranches: {
+    label: 'Augmenter la capacité de travail simultané',
+    description: 'Faire progresser le nombre maximal de branches actives en même temps.',
+  },
+  xl: {
+    label: 'Augmenter la part des réalisations XL',
+    description: 'Développer la capacité à livrer des changements de plus de 500 lignes.',
+  },
+  lXl: {
+    label: 'Augmenter la part des réalisations L ou XL',
+    description: 'Développer la capacité à livrer des changements larges ou multi-modules.',
+  },
+  s: {
+    label: 'Consolider les réalisations S',
+    description: 'Renforcer la livraison de petites fonctionnalités bien délimitées.',
+  },
+  m: {
+    label: 'Consolider les réalisations M',
+    description: 'Renforcer la livraison de changements de complexité standard.',
+  },
+  l: {
+    label: 'Consolider les réalisations L',
+    description: 'Renforcer la livraison de fonctionnalités en plusieurs étapes.',
+  },
+  contextEngineeringScore: {
+    label: 'Renforcer le contexte fourni à l’IA',
+    description:
+      'Améliorer les informations et instructions disponibles pour guider les agents IA.',
+  },
+  aiConfigurationScore: {
+    label: 'Enrichir la configuration des agents IA',
+    description: 'Compléter la configuration utilisée par les outils et agents IA.',
+  },
+  ciMedianRunsToGreen: {
+    label: 'Réduire les relances de CI',
+    description: 'Diminuer le nombre médian de runs nécessaires avant d’obtenir une CI verte.',
+  },
+  medianCorrectionCommitsAfterOpen: {
+    label: 'Réduire les corrections après ouverture',
+    description:
+      'Diminuer le nombre médian de commits correctifs ajoutés après l’ouverture des PRs.',
+  },
+  humanCommitRatio: {
+    label: 'Augmenter la part de travail produite avec l’IA',
+    description: 'Réduire la proportion de commits écrits directement sans assistance IA.',
+  },
+  mergedWithoutHumanEditRatio: {
+    label: 'Augmenter les PRs fusionnées sans retouche',
+    description:
+      'Augmenter la part des PRs acceptées sans modification humaine après leur ouverture.',
+  },
+  medianReviewCommentsReceived: {
+    label: 'Réduire les retours de review',
+    description: 'Diminuer le nombre médian de commentaires reçus pendant la revue des PRs.',
+  },
+};
+
+const toImprovement = (improvement: DeveloperProfileResult['improvements'][number]) => {
+  const presentation = IMPROVEMENT_PRESENTATION[improvement.type];
+  return {
+    axis: improvement.axis,
+    type: improvement.type,
+    label: presentation?.label ?? improvement.type,
+    description:
+      presentation?.description ?? 'Signal à améliorer pour atteindre le niveau suivant.',
+    targetLevel: improvement.targetLevel,
+  };
 };
 
 const field = (
@@ -150,8 +241,8 @@ const toHarnessFieldGroups = (
       fields: [
         field(
           'claudeMd',
-          'CLAUDE.md présent',
-          "Fichier principal d'instructions projet fourni à l'IA à chaque session",
+          'Fichier CLAUDE.md',
+          "Présence du fichier principal d'instructions projet fourni à l'IA à chaque session",
           context?.claudeMd ?? null,
         ),
         field(
@@ -198,14 +289,14 @@ const toHarnessFieldGroups = (
       fields: [
         field(
           'agentsMd',
-          'AGENTS.md présent',
-          'Fichier de configuration des agents IA opérant sur ce repo',
+          'Fichier AGENTS.md',
+          'Présence du fichier de configuration des agents IA opérant sur ce repo',
           configuration?.agentsMd ?? null,
         ),
         field(
           'settingsJson',
-          'settings.json présent',
-          "Fichier de paramétrage de l'outil IA au niveau projet (ex : Claude Code)",
+          'Configuration settings.json',
+          "Présence du fichier de paramétrage de l'outil IA au niveau projet (ex : Claude Code)",
           configuration?.settingsJson ?? null,
         ),
         field(
@@ -323,13 +414,108 @@ const toParallelismFieldGroups = (
       ),
       field(
         'hasWorktreeInclude',
-        '.worktreeinclude présent',
-        'Fichier Git permettant de partager la config IA entre plusieurs worktrees actifs',
+        'Fichier .worktreeinclude',
+        'Présence du fichier Git permettant de partager la config IA entre plusieurs worktrees actifs',
         profile.hasWorktreeInclude,
       ),
     ],
   },
 ];
+
+interface MissingDataCatalogEntry {
+  axis: MissingDataAxisViewModel;
+  field: MissingDataFieldViewModel;
+}
+
+const PROFILE_MISSING_DATA: Record<string, MissingDataFieldViewModel> = {
+  'profile.role': {
+    path: 'profile.role',
+    label: 'Rôle',
+    description: 'Rôle du développeur non renseigné.',
+  },
+  'profile.experienceYears': {
+    path: 'profile.experienceYears',
+    label: 'Expérience',
+    description: "Nombre d'années d'expérience non renseigné.",
+  },
+  'profile.stack': {
+    path: 'profile.stack',
+    label: 'Stack technique',
+    description: 'Technologies utilisées non renseignées.',
+  },
+  'profile.teamSize': {
+    path: 'profile.teamSize',
+    label: "Taille de l'équipe",
+    description: "Nombre de personnes dans l'équipe non renseigné.",
+  },
+  'profile.note': {
+    path: 'profile.note',
+    label: 'Note de contexte',
+    description: 'Aucune information complémentaire fournie.',
+  },
+};
+
+const toFieldPath = (axis: AxisViewModel, groupName: string, fieldName: string): string => {
+  if (axis.axis === 'harness') return `${axis.axis}.${groupName}.${fieldName}`;
+  if (axis.axis === 'size' && groupName === 'distribution') {
+    return `${axis.axis}.${groupName}.${fieldName}`;
+  }
+  return `${axis.axis}.${fieldName}`;
+};
+
+const toMissingDataGroups = (
+  result: DeveloperProfileResult,
+  axes: AxisViewModel[],
+): MissingDataGroupViewModel[] => {
+  const catalog = new Map<string, MissingDataCatalogEntry>();
+
+  for (const [path, fieldViewModel] of Object.entries(PROFILE_MISSING_DATA)) {
+    catalog.set(path, { axis: 'profile', field: fieldViewModel });
+  }
+
+  for (const axis of axes) {
+    for (const group of axis.fieldGroups) {
+      for (const axisField of group.fields) {
+        const path = toFieldPath(axis, group.name, axisField.name);
+        catalog.set(path, {
+          axis: axis.axis,
+          field: {
+            path,
+            label: axisField.label,
+            description: axisField.description,
+          },
+        });
+      }
+    }
+  }
+
+  const axisOrder: MissingDataAxisViewModel[] = [
+    'profile',
+    'size',
+    'harness',
+    'intervention',
+    'parallelism',
+  ];
+  const groupLabel: Record<MissingDataAxisViewModel, string> = {
+    profile: 'Profil',
+    ...AXIS_LABEL,
+  };
+
+  return axisOrder.flatMap((axis) => {
+    const impactingFields = result.impactingNulls
+      .map((path) => catalog.get(path))
+      .filter((entry): entry is MissingDataCatalogEntry => entry?.axis === axis)
+      .map((entry) => entry.field);
+    const ignoredFields = result.ignoredNulls
+      .map((path) => catalog.get(path))
+      .filter((entry): entry is MissingDataCatalogEntry => entry?.axis === axis)
+      .map((entry) => entry.field);
+
+    return impactingFields.length > 0 || ignoredFields.length > 0
+      ? [{ axis, label: groupLabel[axis], impactingFields, ignoredFields }]
+      : [];
+  });
+};
 
 export class DeveloperProfileResultPresenter {
   static present(result: DeveloperProfileResult): DeveloperProfileResultViewModel {
@@ -366,23 +552,20 @@ export class DeveloperProfileResultPresenter {
       },
     ];
 
-    const improvements: ImprovementViewModel[] = result.improvements.map((imp) => ({
-      axis: imp.axis,
-      type: imp.type,
-      targetLevel: imp.targetLevel,
-    }));
+    const improvements: ImprovementViewModel[] = result.improvements.map(toImprovement);
 
-    const busImprovements: ImprovementViewModel[] = result.busImprovements.map((imp) => ({
-      axis: imp.axis,
-      type: imp.type,
-      targetLevel: imp.targetLevel,
-    }));
+    const busImprovements: ImprovementViewModel[] = result.busImprovements.map(toImprovement);
 
     return {
       overallLevel: toLevel(result.overallLevel),
       axes,
       improvements,
       busImprovements,
+      formatWarnings: result.formatWarnings.map((warning) => ({
+        field: warning.field,
+        reason: warning.reason,
+      })),
+      missingDataGroups: toMissingDataGroups(result, axes),
     };
   }
 }

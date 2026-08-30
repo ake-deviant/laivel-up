@@ -26,6 +26,32 @@ describe('LaivelUpDeveloperProfileRepository', () => {
       expect(repo.findById('gauvain').isOk).toBe(true);
     });
 
+    it('should return a DeveloperProfile with missing axis data for paul', () => {
+      const result = repo.findById('paul');
+
+      expect(result.isOk).toBe(true);
+      if (result.isOk) {
+        expect(result.value.profile.availableSources).toEqual([]);
+        expect(result.value.profile.size).toEqual({
+          distribution: null,
+          medianFilesChanged: null,
+          medianLinesChanged: null,
+        });
+        expect(result.value.profile.harness).toEqual({
+          contextEngineering: null,
+          aiConfiguration: null,
+          loops: null,
+        });
+        expect(
+          Object.values(result.value.profile.intervention).every((value) => value === null),
+        ).toBe(true);
+        expect(
+          Object.values(result.value.profile.parallelism).every((value) => value === null),
+        ).toBe(true);
+        expect(result.value.formatWarnings).toEqual([]);
+      }
+    });
+
     it('should return a ParseError when profile.json has a blocking field missing', () => {
       const result = repo.findById('invalid-profile');
       expect(result.isErr).toBe(true);

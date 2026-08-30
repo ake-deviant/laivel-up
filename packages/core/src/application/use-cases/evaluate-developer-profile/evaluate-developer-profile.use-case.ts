@@ -31,12 +31,12 @@ export class EvaluateDeveloperProfileUseCase {
     const profileResult = this.repository.findById(profileId);
     if (profileResult.isErr) return profileResult;
 
-    const report = this.triage.triage(profileResult.value);
+    const report = this.triage.triage(profileResult.value.profile);
     if (report.blockingIssues.length > 0) {
       return err(new DeveloperInvalidProfileError(report.blockingIssues));
     }
 
-    const profile = profileResult.value;
+    const { profile, formatWarnings } = profileResult.value;
     const evaluated = this.evaluator.evaluate(profile);
 
     const signalMatrices = [
@@ -53,6 +53,9 @@ export class EvaluateDeveloperProfileUseCase {
       signalMatrices,
       improvements,
       busImprovements: this.collector.improvements,
+      formatWarnings,
+      impactingNulls: report.impactingNulls,
+      ignoredNulls: report.ignoredNulls,
     });
   }
 }

@@ -52,6 +52,9 @@ const makeResult = (overrides: Partial<DeveloperProfileResult> = {}): DeveloperP
   signalMatrices: [],
   improvements: [],
   busImprovements: [],
+  formatWarnings: [],
+  impactingNulls: [],
+  ignoredNulls: [],
   ...overrides,
 });
 
@@ -108,7 +111,7 @@ describe('DeveloperProfileResult presenter', () => {
     expect(vm.axes[3].level).toEqual({ value: 'blue', label: 'Blue', rank: 2 });
   });
 
-  it('when presenting a result with improvements — maps them preserving axis, type and targetLevel', () => {
+  it('when presenting a result with improvements — provides display-ready information', () => {
     // arrange
     const result = makeResult({
       improvements: [
@@ -121,8 +124,27 @@ describe('DeveloperProfileResult presenter', () => {
 
     // assert
     expect(vm.improvements).toEqual([
-      { axis: 'parallelism', type: 'hasWorktreeInclude', targetLevel: AiddLevelValue.gold },
+      {
+        axis: 'parallelism',
+        type: 'hasWorktreeInclude',
+        label: 'Configurer les worktrees Git',
+        description: 'Partager la configuration IA entre plusieurs worktrees actifs.',
+        targetLevel: AiddLevelValue.gold,
+      },
     ]);
+  });
+
+  it('when median concurrent branches blocks progress — explains the metric', () => {
+    const result = makeResult({
+      improvements: [{ axis: 'parallelism', type: 'medianConcurrentBranches' }],
+    });
+
+    const vm = DeveloperProfileResultPresenter.present(result);
+
+    expect(vm.improvements[0]).toMatchObject({
+      label: 'Développer le travail en parallèle',
+      description: expect.stringContaining('nombre médian de branches ouvertes simultanément'),
+    });
   });
 
   it('when presenting a result with no improvements — returns empty array', () => {
@@ -181,9 +203,9 @@ describe('DeveloperProfileResult presenter', () => {
     ]);
     expect(vm.axes[3].fieldGroups[0].fields[2]).toEqual({
       name: 'hasWorktreeInclude',
-      label: '.worktreeinclude présent',
+      label: 'Fichier .worktreeinclude',
       description:
-        'Fichier Git permettant de partager la config IA entre plusieurs worktrees actifs',
+        'Présence du fichier Git permettant de partager la config IA entre plusieurs worktrees actifs',
       value: true,
     });
   });
@@ -204,5 +226,54 @@ describe('DeveloperProfileResult presenter', () => {
         .flatMap((group) => group.fields)
         .every((field) => field.value === null),
     ).toBe(true);
+  });
+
+  it('when format warnings are present — maps their field and reason', () => {
+    const result = makeResult({
+      formatWarnings: [{ field: 'experience_years', reason: 'Expected number, received string' }],
+    });
+
+    const vm = DeveloperProfileResultPresenter.present(result);
+
+    expect(vm.formatWarnings).toEqual([
+      { field: 'experience_years', reason: 'Expected number, received string' },
+    ]);
+  });
+
+  it('when null classifications are present — groups display-ready fields by axis', () => {
+    const result = makeResult({
+      impactingNulls: ['size.distribution.xs'],
+      ignoredNulls: ['profile.note'],
+    });
+
+    const vm = DeveloperProfileResultPresenter.present(result);
+
+    expect(vm.missingDataGroups).toEqual([
+      {
+        axis: 'profile',
+        label: 'Profil',
+        impactingFields: [],
+        ignoredFields: [
+          {
+            path: 'profile.note',
+            label: 'Note de contexte',
+            description: 'Aucune information complémentaire fournie.',
+          },
+        ],
+      },
+      {
+        axis: 'size',
+        label: 'Taille',
+        impactingFields: [
+          {
+            path: 'size.distribution.xs',
+            label: 'PRs XS (ratio)',
+            description:
+              'Part des PRs de moins de 10 lignes — correctifs ponctuels ou ajustements triviaux',
+          },
+        ],
+        ignoredFields: [],
+      },
+    ]);
   });
 });

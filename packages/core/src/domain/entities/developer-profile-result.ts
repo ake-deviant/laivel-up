@@ -5,6 +5,7 @@ import { SizeProfile } from './size-profile';
 import { HarnessProfile } from './harness-profile';
 import { InterventionProfile } from './intervention-profile';
 import { ParallelismProfile } from './parallelism-profile';
+import { FormatWarning } from '../shared/format-warning';
 
 export interface AxisProfiles {
   size: SizeProfile;
@@ -23,4 +24,7 @@ export interface DeveloperProfileResult {
   signalMatrices: AxisSignalMatrix[];
   improvements: Improvement[];
   busImprovements: Improvement[];
+  formatWarnings: FormatWarning[];
+  impactingNulls: string[];
+  ignoredNulls: string[];
 }

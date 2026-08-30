@@ -3,7 +3,7 @@ import * as path from 'path';
 import { LaivelUpAiContextInput } from '../../infrastructure/inputs/laivel-up-ai-context-input';
 import { LaivelUpProfileInput } from '../../infrastructure/inputs/laivel-up-profile-input';
 
-const PROFILES_DIR = path.resolve(__dirname, 'profiles');
+const PROFILES_DIR = path.resolve(process.cwd(), process.env.PROFILES_BASE_DIR!);
 
 function findFile(dir: string, filename: string): string | null {
   if (!fs.existsSync(dir)) return null;
@@ -94,6 +94,10 @@ export class LaivelUpDeveloperProfileInputFixture {
 
   static perceval(): LaivelUpProfileInput {
     return load('perceval');
+  }
+
+  static paul(): LaivelUpProfileInput {
+    return load('paul');
   }
 
   static gauvain(): LaivelUpProfileInput {

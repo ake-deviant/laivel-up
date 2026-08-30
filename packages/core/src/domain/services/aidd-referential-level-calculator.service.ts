@@ -36,6 +36,9 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
       signalMatrices: [],
       improvements: [],
       busImprovements: [],
+      formatWarnings: [],
+      impactingNulls: [],
+      ignoredNulls: [],
     };
   }
 }

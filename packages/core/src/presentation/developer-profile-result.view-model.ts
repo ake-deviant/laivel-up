@@ -38,7 +38,29 @@ export interface AxisViewModel {
 export interface ImprovementViewModel {
   axis: ImprovementAxis;
   type: string;
+  label: string;
+  description: string;
   targetLevel?: AiddLevelValue;
+}
+
+export interface FormatWarningViewModel {
+  field: string;
+  reason: string;
+}
+
+export type MissingDataAxisViewModel = 'profile' | ImprovementAxis;
+
+export interface MissingDataFieldViewModel {
+  path: string;
+  label: string;
+  description: string;
+}
+
+export interface MissingDataGroupViewModel {
+  axis: MissingDataAxisViewModel;
+  label: string;
+  impactingFields: MissingDataFieldViewModel[];
+  ignoredFields: MissingDataFieldViewModel[];
 }
 
 export interface DeveloperProfileResultViewModel {
@@ -46,4 +68,6 @@ export interface DeveloperProfileResultViewModel {
   axes: AxisViewModel[];
   improvements: ImprovementViewModel[];
   busImprovements: ImprovementViewModel[];
+  formatWarnings: FormatWarningViewModel[];
+  missingDataGroups: MissingDataGroupViewModel[];
 }

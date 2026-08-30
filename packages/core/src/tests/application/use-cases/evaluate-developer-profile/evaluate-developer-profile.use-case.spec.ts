@@ -1,8 +1,8 @@
 import { EvaluateDeveloperProfileUseCase } from '../../../../application/use-cases/evaluate-developer-profile/evaluate-developer-profile.use-case';
 import { IDeveloperProfileRepository } from '../../../../application/ports/developer-profile-repository.port';
+import { DeveloperProfileRepositoryResult } from '../../../../application/ports/developer-profile-repository.port';
 import { IDeveloperProfileEvaluator } from '../../../../domain/ports/developer-profile-evaluator.port';
 import { IAxisSignalDetector } from '../../../../domain/ports/axis-signal-detector.port';
-import { DeveloperProfile } from '../../../../domain/entities/developer-profile';
 import { DeveloperProfileResult } from '../../../../domain/entities/developer-profile-result';
 import { AxisSignalMatrix } from '../../../../domain/entities/axis-signal-matrix';
 import { AiddLevelValue } from '../../../../domain/entities/aidd-level-value';
@@ -18,8 +18,8 @@ import { InterventionProfile } from '../../../../domain/entities/intervention-pr
 import { ParallelismProfile } from '../../../../domain/entities/parallelism-profile';
 
 class InMemoryDeveloperProfileRepository implements IDeveloperProfileRepository {
-  constructor(private readonly result: Result<DeveloperProfile, ParseError>) {}
-  findById(_profileId: string): Result<DeveloperProfile, ParseError> {
+  constructor(private readonly result: Result<DeveloperProfileRepositoryResult, ParseError>) {}
+  findById(_profileId: string): Result<DeveloperProfileRepositoryResult, ParseError> {
     return this.result;
   }
 }
@@ -50,6 +50,9 @@ const stubResult: DeveloperProfileResult = {
   signalMatrices: [],
   improvements: [],
   busImprovements: [],
+  formatWarnings: [],
+  impactingNulls: [],
+  ignoredNulls: [],
 };
 
 const stubEvaluator: IDeveloperProfileEvaluator = {
@@ -82,7 +85,9 @@ describe('EvaluateDeveloperProfileUseCase', () => {
   });
 
   it('should return DeveloperProfileResult when profile is valid', () => {
-    const repo = new InMemoryDeveloperProfileRepository(ok(DeveloperProfileFixture.valid()));
+    const repo = new InMemoryDeveloperProfileRepository(
+      ok({ profile: DeveloperProfileFixture.valid(), formatWarnings: [] }),
+    );
     const useCase = makeUseCase(repo);
 
     const result = useCase.execute('arthur');
@@ -96,8 +101,51 @@ describe('EvaluateDeveloperProfileUseCase', () => {
     }
   });
 
+  it('should propagate format warnings when profile is valid', () => {
+    const repo = new InMemoryDeveloperProfileRepository(
+      ok({
+        profile: DeveloperProfileFixture.valid(),
+        formatWarnings: [{ field: 'experience_years', reason: 'Expected number, received string' }],
+      }),
+    );
+    const useCase = makeUseCase(repo);
+
+    const result = useCase.execute('paul');
+
+    expect(result.isOk).toBe(true);
+    if (result.isOk) {
+      expect(result.value.formatWarnings).toEqual([
+        { field: 'experience_years', reason: 'Expected number, received string' },
+      ]);
+    }
+  });
+
+  it('should propagate impacting and ignored nulls when profile data is missing', () => {
+    const repo = new InMemoryDeveloperProfileRepository(
+      ok({ profile: DeveloperProfileFixture.valid(), formatWarnings: [] }),
+    );
+    const useCase = makeUseCase(repo);
+
+    const result = useCase.execute('paul');
+
+    expect(result.isOk).toBe(true);
+    if (result.isOk) {
+      expect(result.value.impactingNulls).toHaveLength(30);
+      expect(result.value.ignoredNulls).toEqual([
+        'profile.role',
+        'profile.experienceYears',
+        'profile.stack',
+        'profile.teamSize',
+        'profile.note',
+        'intervention.totalPrCount',
+      ]);
+    }
+  });
+
   it('should return DeveloperInvalidProfileError when profile has no id', () => {
-    const repo = new InMemoryDeveloperProfileRepository(ok(DeveloperProfileFixture.withoutId()));
+    const repo = new InMemoryDeveloperProfileRepository(
+      ok({ profile: DeveloperProfileFixture.withoutId(), formatWarnings: [] }),
+    );
     const useCase = makeUseCase(repo);
 
     const result = useCase.execute('arthur');

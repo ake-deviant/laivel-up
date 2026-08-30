@@ -83,6 +83,10 @@ describe('DeveloperProfileMapper', () => {
       expect(profile.harness.aiConfiguration?.settingsJson).toBeNull();
     });
 
+    it('should fall back to gitActivity for AGENTS.md presence when aiContext is absent', () => {
+      expect(profile.harness.aiConfiguration?.agentsMd).toBe(0);
+    });
+
     it('should set hasWorktreeInclude to null when aiContext is absent', () => {
       expect(profile.parallelism.hasWorktreeInclude).toBeNull();
     });
@@ -96,5 +100,40 @@ describe('DeveloperProfileMapper', () => {
     const profile = DeveloperProfileMapper.toDomain(input);
 
     expect(profile.size.distribution).toBeNull();
+  });
+
+  it('should map AGENTS.md presence from gitActivity when repo context is unavailable', () => {
+    const input = LaivelUpDeveloperProfileInputFixture.perceval();
+    if (!input.gitActivity?.context_files) throw new Error('Missing context files fixture');
+    input.gitActivity.context_files.agents_md = true;
+
+    const profile = DeveloperProfileMapper.toDomain(input);
+
+    expect(profile.harness.aiConfiguration?.agentsMd).toBe(1);
+  });
+
+  it('should prioritize observed repo context over gitActivity for AGENTS.md presence', () => {
+    const input = LaivelUpDeveloperProfileInputFixture.arthur();
+    if (!input.aiContext) throw new Error('Missing AI context fixture');
+    if (!input.gitActivity?.context_files) throw new Error('Missing context files fixture');
+    input.aiContext.hasAgentsMd = false;
+    input.gitActivity.context_files.agents_md = true;
+
+    const profile = DeveloperProfileMapper.toDomain(input);
+
+    expect(profile.harness.aiConfiguration?.agentsMd).toBe(0);
+  });
+
+  it('should preserve missing axis data for paul', () => {
+    const profile = DeveloperProfileMapper.toDomain(LaivelUpDeveloperProfileInputFixture.paul());
+
+    expect(profile.id).toBe('paul');
+    expect(profile.availableSources).toEqual([]);
+    expect(profile.size.distribution).toBeNull();
+    expect(profile.harness.contextEngineering).toBeNull();
+    expect(profile.harness.aiConfiguration).toBeNull();
+    expect(profile.harness.loops).toBeNull();
+    expect(Object.values(profile.intervention).every((value) => value === null)).toBe(true);
+    expect(Object.values(profile.parallelism).every((value) => value === null)).toBe(true);
   });
 });

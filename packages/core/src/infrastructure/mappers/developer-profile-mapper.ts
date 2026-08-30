@@ -90,7 +90,15 @@ function mapHarness(
     aiConfiguration:
       gitActivity || aiContext
         ? {
-            agentsMd: aiContext ? (aiContext.hasAgentsMd ? 1 : 0) : null,
+            agentsMd: aiContext
+              ? aiContext.hasAgentsMd
+                ? 1
+                : 0
+              : gitActivity?.context_files?.agents_md === undefined
+                ? null
+                : gitActivity.context_files.agents_md
+                  ? 1
+                  : 0,
             settingsJson: aiContext ? (aiContext.settings?.hasSettings ? 1 : 0) : null,
             agentsCount: gitActivity?.context_files?.agents_count ?? null,
             skillsCount: gitActivity?.context_files?.skills_count ?? null,

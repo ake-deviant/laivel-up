@@ -57,6 +57,9 @@ describe('AIDD level calculator', () => {
         signalMatrices: [],
         improvements: [],
         busImprovements: [],
+        formatWarnings: [],
+        impactingNulls: [],
+        ignoredNulls: [],
       });
     });
   });
