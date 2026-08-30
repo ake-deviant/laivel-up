@@ -42,7 +42,7 @@ Hackathon Laivel Up (deadline 31 août 12h). L'objectif est d'évaluer le niveau
 
 ## Prochain travail
 
-À définir par l'utilisateur.
+Construire l'interface utilisateur : afficher le résultat de l'évaluation d'un profil développeur (niveau global et par axe) de façon lisible et exploitable pour le jury.
 
 ## Docs à lire avant d'implémenter
 
