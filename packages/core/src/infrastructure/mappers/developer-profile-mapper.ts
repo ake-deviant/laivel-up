@@ -76,24 +76,24 @@ function mapHarness(
   return {
     contextEngineering: aiContext
       ? {
-          hasClaude: aiContext.hasClaude,
-          hasAgentsMd: aiContext.hasAgentsMd,
-          hasDocsContext: aiContext.hasDocsContext,
-          hasDocsSpecs: aiContext.hasDocsSpecs,
-          hasDocsBrainstorm: aiContext.hasDocsBrainstorm,
-          hasDocsPlans: aiContext.hasDocsPlans,
-          hasMemory: aiContext.hasMemory,
-          hasTasks: aiContext.hasTasks,
+          claudeMd: aiContext.hasClaude ? 1 : 0,
+          docsContextCount: aiContext.hasDocsContext ? 1 : 0,
+          docsSpecsCount: aiContext.hasDocsSpecs ? 1 : 0,
+          docsBrainstormCount: aiContext.hasDocsBrainstorm ? 1 : 0,
+          docsPlansCount: aiContext.hasDocsPlans ? 1 : 0,
+          memoryCount: aiContext.hasMemory ? 1 : 0,
+          tasksCount: aiContext.hasTasks ? 1 : 0,
         }
       : null,
-    behavior:
+    aiConfiguration:
       gitActivity || aiContext
         ? {
-            rulesCount: gitActivity?.context_files?.rules_count ?? null,
+            agentsMd: aiContext ? (aiContext.hasAgentsMd ? 1 : 0) : null,
+            settingsJson: aiContext ? (aiContext.settings?.hasSettings ? 1 : 0) : null,
             agentsCount: gitActivity?.context_files?.agents_count ?? null,
-            hooksCount: gitActivity?.context_files?.hooks_count ?? null,
             skillsCount: gitActivity?.context_files?.skills_count ?? null,
-            hasSettings: aiContext?.settings?.hasSettings ?? null,
+            hooksCount: gitActivity?.context_files?.hooks_count ?? null,
+            rulesCount: gitActivity?.context_files?.rules_count ?? null,
             aiCoauthoredRatio: gitActivity?.commits?.ai_coauthored_ratio ?? null,
           }
         : null,

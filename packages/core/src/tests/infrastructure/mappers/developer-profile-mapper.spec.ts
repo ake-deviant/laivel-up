@@ -39,19 +39,19 @@ describe('DeveloperProfileMapper', () => {
     });
 
     it('should map contextEngineering from aiContext', () => {
-      expect(profile.harness.contextEngineering?.hasClaude).toBe(true);
-      expect(profile.harness.contextEngineering?.hasAgentsMd).toBe(true);
-      expect(profile.harness.contextEngineering?.hasDocsContext).toBe(true);
-      expect(profile.harness.contextEngineering?.hasMemory).toBe(false);
+      expect(profile.harness.contextEngineering?.claudeMd).toBe(1);
+      expect(profile.harness.contextEngineering?.docsContextCount).toBe(1);
+      expect(profile.harness.contextEngineering?.memoryCount).toBe(0);
     });
 
-    it('should map behavior from gitActivity context_files', () => {
-      expect(profile.harness.behavior?.skillsCount).toBe(4);
-      expect(profile.harness.behavior?.agentsCount).toBe(2);
-      expect(profile.harness.behavior?.rulesCount).toBe(0);
-      expect(profile.harness.behavior?.hooksCount).toBe(0);
-      expect(profile.harness.behavior?.hasSettings).toBe(true);
-      expect(profile.harness.behavior?.aiCoauthoredRatio).toBe(0.91);
+    it('should map aiConfiguration from gitActivity and aiContext', () => {
+      expect(profile.harness.aiConfiguration?.agentsMd).toBe(1);
+      expect(profile.harness.aiConfiguration?.skillsCount).toBe(4);
+      expect(profile.harness.aiConfiguration?.agentsCount).toBe(2);
+      expect(profile.harness.aiConfiguration?.rulesCount).toBe(0);
+      expect(profile.harness.aiConfiguration?.hooksCount).toBe(0);
+      expect(profile.harness.aiConfiguration?.settingsJson).toBe(1);
+      expect(profile.harness.aiConfiguration?.aiCoauthoredRatio).toBe(0.91);
     });
 
     it('should map loops from gitActivity ci', () => {
@@ -79,8 +79,8 @@ describe('DeveloperProfileMapper', () => {
       expect(profile.harness.contextEngineering).toBeNull();
     });
 
-    it('should set hasSettings to null when aiContext is absent', () => {
-      expect(profile.harness.behavior?.hasSettings).toBeNull();
+    it('should set aiConfiguration settingsJson to null when aiContext is absent', () => {
+      expect(profile.harness.aiConfiguration?.settingsJson).toBeNull();
     });
 
     it('should set hasWorktreeInclude to null when aiContext is absent', () => {

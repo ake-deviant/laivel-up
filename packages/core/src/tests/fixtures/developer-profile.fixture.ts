@@ -5,7 +5,7 @@ const base: DeveloperProfile = {
   availableSources: [],
   profile: null,
   size: { distribution: null, medianFilesChanged: null, medianLinesChanged: null },
-  harness: { contextEngineering: null, behavior: null, loops: null },
+  harness: { contextEngineering: null, aiConfiguration: null, loops: null },
   intervention: {
     totalPrCount: null,
     medianCorrectionCommitsAfterOpen: null,

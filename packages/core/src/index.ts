@@ -26,6 +26,9 @@ export { defaultInterventionThresholdsConfig } from './domain/services/intervent
 export { createWeightedParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
 export type { IParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
 export { defaultParallelismThresholdsConfig } from './domain/services/parallelism-thresholds.config';
+export { createHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
+export type { IHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
+export { defaultHarnessThresholdsConfig } from './domain/services/harness-thresholds.config';
 
 // Application ports
 export type { IProfileParser } from './application/ports/profile-parser.port';

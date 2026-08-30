@@ -11,7 +11,10 @@ import {
   defaultInterventionThresholdsConfig,
   SizeLevelCalculatorService,
   defaultSizeThresholdsConfig,
+  createHarnessLevelCalculator,
+  defaultHarnessThresholdsConfig,
   ILevelImprovementBus,
+  IHarnessLevelCalculator,
   IInterventionLevelCalculator,
   IParallelismLevelCalculator,
   ISizeLevelCalculator,
@@ -61,11 +64,16 @@ container
   );
 
 container
+  .bind(DI.HARNESS_LEVEL_CALCULATOR)
+  .toFactory(() => createHarnessLevelCalculator(defaultHarnessThresholdsConfig));
+
+container
   .bind(DI.DEVELOPER_PROFILE_EVALUATOR)
   .toFactory(
     (resolve: ResolveFunction) =>
       new AiddReferentialLevelCalculatorService(
         r<ISizeLevelCalculator>(resolve, DI.SIZE_LEVEL_CALCULATOR),
+        r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
         r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
         r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
       ),
