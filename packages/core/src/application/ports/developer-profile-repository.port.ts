@@ -1,7 +1,13 @@
 import { DeveloperProfile } from '../../domain/entities/developer-profile';
 import { ParseError } from '../../domain/errors/parse.error';
+import { FormatWarning } from '../../domain/shared/format-warning';
 import { Result } from '../../domain/shared/result';
 
+export interface DeveloperProfileRepositoryResult {
+  profile: DeveloperProfile;
+  formatWarnings: FormatWarning[];
+}
+
 export interface IDeveloperProfileRepository {
-  findById(profileId: string): Result<DeveloperProfile, ParseError>;
+  findById(profileId: string): Result<DeveloperProfileRepositoryResult, ParseError>;
 }

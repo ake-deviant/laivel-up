@@ -31,6 +31,16 @@
       "maxConcurrentBranches": null,
       "medianConcurrentBranches": null,
       "hasWorktreeInclude": null
+    },
+    "velocity": {
+      "sprintCount": null,
+      "storyPointsPerSprint": null,
+      "teamAvgStoryPointsPerSprint": null,
+      "completionRate": null,
+      "medianDaysTicketToPr": null,
+      "teamAvgMedianDaysTicketToPr": null,
+      "featuresPerSprint": null,
+      "bugsPerSprint": null
     }
   },
   "formatWarnings": [

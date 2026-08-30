@@ -1,14 +1,5 @@
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
 import { ParallelismProfile } from '../../../domain/entities/parallelism-profile';
-import {
-  WORKTREE_DATA_MISSING,
-  WORKTREE_NOT_CONFIGURED,
-} from '../../../domain/events/parallelism-improvement.events';
-import {
-  ILevelImprovementBus,
-  LevelImprovementEvent,
-  noopLevelImprovementBus,
-} from '../../../domain/ports/level-improvement-bus.port';
 import { createWeightedParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
 import { parallelismThresholdsConfigFixture } from '../../fixtures/parallelism-thresholds-config.fixture';
 
@@ -19,12 +10,6 @@ const toProfile = (
   maxConcurrentBranches: number | null,
   hasWorktreeInclude: boolean | null,
 ): ParallelismProfile => ({ medianConcurrentBranches, maxConcurrentBranches, hasWorktreeInclude });
-
-const createSpyBus = () => {
-  const events: LevelImprovementEvent[] = [];
-  const bus: ILevelImprovementBus = { emit: (e) => events.push(e) };
-  return { bus, events };
-};
 
 describe('Parallelism level calculator', () => {
   it.each([
@@ -80,62 +65,12 @@ describe('Parallelism level calculator', () => {
     },
   ])('when $label — assigns $expected level', ({ profile, expected }) => {
     // arrange
-    const calculator = createWeightedParallelismLevelCalculator(cfg, noopLevelImprovementBus);
+    const calculator = createWeightedParallelismLevelCalculator(cfg);
 
     // act
     const result = calculator.calculate(profile);
 
     // assert
     expect(result).toBe(expected);
-  });
-});
-
-describe('Parallelism level calculator — improvement events', () => {
-  it('when score reaches gold threshold but worktree data is missing — emits worktree_data_missing', () => {
-    // arrange
-    const { bus, events } = createSpyBus();
-    const calculator = createWeightedParallelismLevelCalculator(cfg, bus);
-
-    // act
-    calculator.calculate(toProfile(4, 0, null));
-
-    // assert
-    expect(events).toContainEqual({ type: WORKTREE_DATA_MISSING, axis: 'parallelism' });
-  });
-
-  it('when score reaches gold threshold but worktree is not configured — emits worktree_not_configured', () => {
-    // arrange
-    const { bus, events } = createSpyBus();
-    const calculator = createWeightedParallelismLevelCalculator(cfg, bus);
-
-    // act
-    calculator.calculate(toProfile(4, 0, false));
-
-    // assert
-    expect(events).toContainEqual({ type: WORKTREE_NOT_CONFIGURED, axis: 'parallelism' });
-  });
-
-  it('when gold is reached — emits no improvement event', () => {
-    // arrange
-    const { bus, events } = createSpyBus();
-    const calculator = createWeightedParallelismLevelCalculator(cfg, bus);
-
-    // act
-    calculator.calculate(toProfile(4, 0, true));
-
-    // assert
-    expect(events).toHaveLength(0);
-  });
-
-  it('when score does not reach gold threshold — emits no improvement event', () => {
-    // arrange
-    const { bus, events } = createSpyBus();
-    const calculator = createWeightedParallelismLevelCalculator(cfg, bus);
-
-    // act
-    calculator.calculate(toProfile(1, 2, null));
-
-    // assert
-    expect(events).toHaveLength(0);
   });
 });

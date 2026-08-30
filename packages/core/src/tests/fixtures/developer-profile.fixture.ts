@@ -19,6 +19,16 @@ const base: DeveloperProfile = {
     medianConcurrentBranches: null,
     hasWorktreeInclude: null,
   },
+  velocity: {
+    sprintCount: null,
+    storyPointsPerSprint: null,
+    teamAvgStoryPointsPerSprint: null,
+    completionRate: null,
+    medianDaysTicketToPr: null,
+    teamAvgMedianDaysTicketToPr: null,
+    featuresPerSprint: null,
+    bugsPerSprint: null,
+  },
 };
 
 export class DeveloperProfileFixture {

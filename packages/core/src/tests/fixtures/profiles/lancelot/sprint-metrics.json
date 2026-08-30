@@ -1,0 +1,10 @@
+{
+  "period": {
+    "sprint_count": 8
+  },
+  "throughput": {
+    "story_points_per_sprint": 5,
+    "team_avg_story_points_per_sprint": 25,
+    "completion_rate": 0.88
+  }
+}

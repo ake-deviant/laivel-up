@@ -3,7 +3,7 @@ import * as path from 'path';
 import { LaivelUpAiContextInput } from '../../infrastructure/inputs/laivel-up-ai-context-input';
 import { LaivelUpProfileInput } from '../../infrastructure/inputs/laivel-up-profile-input';
 
-const PROFILES_DIR = path.resolve(__dirname, 'profiles');
+const PROFILES_DIR = path.resolve(process.cwd(), process.env.PROFILES_BASE_DIR!);
 
 function findFile(dir: string, filename: string): string | null {
   if (!fs.existsSync(dir)) return null;
@@ -59,6 +59,7 @@ function load(name: string): LaivelUpProfileInput {
   const gitActivityPath = findFile(profileDir, 'git-activity.json');
   const pullRequestsPath = findFile(profileDir, 'pull-requests.json');
   const sonarPath = findFile(profileDir, 'sonar-measures.json');
+  const sprintMetricsPath = findFile(profileDir, 'sprint-metrics.json');
   const declaratifPath = findFile(profileDir, 'declaratif.md');
   const sessionPath = findFile(profileDir, 'session.md');
 
@@ -73,6 +74,9 @@ function load(name: string): LaivelUpProfileInput {
     gitActivity: gitActivityPath ? JSON.parse(fs.readFileSync(gitActivityPath, 'utf-8')) : null,
     pullRequests: pullRequestsPath ? JSON.parse(fs.readFileSync(pullRequestsPath, 'utf-8')) : null,
     sonarMeasures: sonarPath ? JSON.parse(fs.readFileSync(sonarPath, 'utf-8')) : null,
+    sprintMetrics: sprintMetricsPath
+      ? JSON.parse(fs.readFileSync(sprintMetricsPath, 'utf-8'))
+      : null,
     aiContext: resolveAiContext(profileDir),
     declaratif: declaratifPath ? fs.readFileSync(declaratifPath, 'utf-8') : null,
     session: sessionPath ? fs.readFileSync(sessionPath, 'utf-8') : null,
@@ -94,5 +98,17 @@ export class LaivelUpDeveloperProfileInputFixture {
 
   static perceval(): LaivelUpProfileInput {
     return load('perceval');
+  }
+
+  static paul(): LaivelUpProfileInput {
+    return load('paul');
+  }
+
+  static gauvain(): LaivelUpProfileInput {
+    return load('gauvain');
+  }
+
+  static lancelot(): LaivelUpProfileInput {
+    return load('lancelot');
   }
 }

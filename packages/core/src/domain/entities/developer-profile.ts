@@ -4,6 +4,7 @@ import { InterventionProfile } from './intervention-profile';
 import { ParallelismProfile } from './parallelism-profile';
 import { Profile } from './profile';
 import { SizeProfile } from './size-profile';
+import { VelocityProfile } from './velocity-profile';
 
 export interface DeveloperProfile {
   id: string;
@@ -13,4 +14,5 @@ export interface DeveloperProfile {
   harness: HarnessProfile;
   intervention: InterventionProfile;
   parallelism: ParallelismProfile;
+  velocity: VelocityProfile;
 }
