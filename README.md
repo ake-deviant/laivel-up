@@ -62,6 +62,36 @@ new SizeLevelCalculatorService({
 });
 ```
 
+## Axe Harness — calcul du niveau
+
+Config par défaut : `packages/core/src/domain/services/harness-thresholds.config.ts`
+
+| Level | Condition | Valeur |
+|---|---|---|
+| white | aucun signal IA détecté | — |
+| red | ratio de commits IA, sans fichier de contexte | > 0 |
+| blue | score context engineering | ≥ 16 |
+| copper | score context engineering **et** score AI configuration | ≥ 16 **et** ≥ 12 |
+| gold | score context engineering **et** score AI configuration **et** runs CI | ≥ 16 **et** ≥ 12 **et** ≤ 1 |
+
+Tous les poids et seuils sont configurables — valeurs par défaut :
+
+| Catégorie | Signal / Paramètre | Valeur |
+|---|---|---|
+| Fichier unique | CLAUDE.md | 4 pts |
+| Fichier unique | AGENTS.md | 3 pts |
+| Fichier unique | `.claude/settings.json` | 2 pts |
+| Dossier | `.claude/hooks/` | 4 pts/fichier |
+| Dossier | `.claude/rules/` | 4 pts/fichier |
+| Dossier | `aidd_docs/memory/` | 4 pts/fichier |
+| Dossier | `docs/specs/` | 3 pts/fichier |
+| Dossier | `docs/plans/` | 3 pts/fichier |
+| Dossier | `aidd_docs/tasks/` | 3 pts/fichier |
+| Dossier | `.claude/agents/` | 3 pts/fichier |
+| Dossier | `.claude/skills/` | 3 pts/fichier |
+| Dossier | `docs/context/` | 2 pts/fichier |
+| Dossier | `docs/brainstorm/` | 2 pts/fichier |
+
 ## Axe Parallèle — calcul du niveau
 
 Le niveau parallelism est calculé à partir d'un score pondéré sur `medianConcurrentBranches` et `maxConcurrentBranches` — le median reflète l'habitude réelle (poids dominant), le max reflète la capacité maximale atteinte (signal secondaire) — un pic isolé ne fait pas le niveau. Le worktree (`hasWorktreeInclude`) est une condition requise pour atteindre gold, pas une pondération.

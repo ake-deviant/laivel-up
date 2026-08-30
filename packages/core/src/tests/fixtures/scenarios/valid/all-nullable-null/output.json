@@ -16,7 +16,7 @@
     },
     "harness": {
       "contextEngineering": null,
-      "behavior": null,
+      "aiConfiguration": null,
       "loops": null
     },
     "intervention": {

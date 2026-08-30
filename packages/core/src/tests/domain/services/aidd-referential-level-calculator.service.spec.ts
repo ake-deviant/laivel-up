@@ -1,8 +1,10 @@
 import { AiddReferentialLevelCalculatorService } from '../../../domain/services/aidd-referential-level-calculator.service';
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
+import { IHarnessLevelCalculator } from '../../../domain/services/harness-level-calculator.service';
 import { IInterventionLevelCalculator } from '../../../domain/services/intervention-level-calculator.service';
 import { IParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
 import { ISizeLevelCalculator } from '../../../domain/services/size-level-calculator.service';
+import { HarnessProfile } from '../../../domain/entities/harness-profile';
 import { InterventionProfile } from '../../../domain/entities/intervention-profile';
 import { ParallelismProfile } from '../../../domain/entities/parallelism-profile';
 import { SizeProfile } from '../../../domain/entities/size-profile';
@@ -10,6 +12,10 @@ import { DeveloperProfileFixture } from '../../fixtures/developer-profile.fixtur
 
 const stubSizeCalculator = (level: AiddLevelValue): ISizeLevelCalculator => ({
   calculate: (_profile: SizeProfile) => level,
+});
+
+const stubHarnessCalculator = (level: AiddLevelValue): IHarnessLevelCalculator => ({
+  calculate: (_profile: HarnessProfile) => level,
 });
 
 const stubInterventionCalculator = (level: AiddLevelValue): IInterventionLevelCalculator => ({
@@ -26,6 +32,7 @@ describe('AIDD level calculator', () => {
       // arrange
       const calculator = new AiddReferentialLevelCalculatorService(
         stubSizeCalculator(AiddLevelValue.white),
+        stubHarnessCalculator(AiddLevelValue.white),
         stubInterventionCalculator(AiddLevelValue.white),
         stubParallelismCalculator(AiddLevelValue.white),
       );
@@ -51,6 +58,7 @@ describe('AIDD level calculator', () => {
       // arrange
       const calculator = new AiddReferentialLevelCalculatorService(
         stubSizeCalculator(AiddLevelValue.silver),
+        stubHarnessCalculator(AiddLevelValue.gold),
         stubInterventionCalculator(AiddLevelValue.gold),
         stubParallelismCalculator(AiddLevelValue.gold),
       );
@@ -62,6 +70,7 @@ describe('AIDD level calculator', () => {
       // assert
       expect(result.overallLevel).toBe(AiddLevelValue.silver);
       expect(result.sizeLevel).toBe(AiddLevelValue.silver);
+      expect(result.harnessLevel).toBe(AiddLevelValue.gold);
       expect(result.parallelismLevel).toBe(AiddLevelValue.gold);
     });
   });
