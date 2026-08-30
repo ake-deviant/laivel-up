@@ -1,6 +1,5 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { InterventionProfile } from '../entities/intervention-profile';
-import { ILevelImprovementBus, noopLevelImprovementBus } from '../ports/level-improvement-bus.port';
 
 export interface IInterventionLevelCalculator {
   calculate(profile: InterventionProfile): AiddLevelValue;
@@ -61,10 +60,7 @@ class InterventionLevelThreshold {
 }
 
 class InterventionLevelCalculatorService implements IInterventionLevelCalculator {
-  constructor(
-    private readonly thresholds: InterventionLevelThreshold[],
-    private readonly bus: ILevelImprovementBus,
-  ) {}
+  constructor(private readonly thresholds: InterventionLevelThreshold[]) {}
 
   calculate(profile: InterventionProfile): AiddLevelValue {
     for (const threshold of this.thresholds) {
@@ -80,7 +76,6 @@ class InterventionLevelCalculatorService implements IInterventionLevelCalculator
 
 export function createInterventionLevelCalculator(
   config: InterventionThresholdsConfig,
-  bus: ILevelImprovementBus = noopLevelImprovementBus,
 ): IInterventionLevelCalculator {
   const thresholds = [
     new InterventionLevelThreshold(AiddLevelValue.gold, config.levels.gold),
@@ -88,5 +83,5 @@ export function createInterventionLevelCalculator(
     new InterventionLevelThreshold(AiddLevelValue.copper, config.levels.copper),
     new InterventionLevelThreshold(AiddLevelValue.blue, config.levels.blue),
   ];
-  return new InterventionLevelCalculatorService(thresholds, bus);
+  return new InterventionLevelCalculatorService(thresholds);
 }

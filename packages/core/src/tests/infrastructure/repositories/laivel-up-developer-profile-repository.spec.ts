@@ -22,6 +22,10 @@ describe('LaivelUpDeveloperProfileRepository', () => {
       expect(repo.findById('perceval').isOk).toBe(true);
     });
 
+    it('should return a DeveloperProfile for gauvain', () => {
+      expect(repo.findById('gauvain').isOk).toBe(true);
+    });
+
     it('should return a ParseError when profile.json has a blocking field missing', () => {
       const result = repo.findById('invalid-profile');
       expect(result.isErr).toBe(true);

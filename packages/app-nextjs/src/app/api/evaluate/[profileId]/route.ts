@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { EvaluateDeveloperProfileUseCase } from '@laivel-up/core';
+import { EvaluateDeveloperProfileUseCase, DeveloperProfileResultPresenter } from '@laivel-up/core';
 import { container } from '../../../../di/container';
 import { DI } from '../../../../di/di';
 
@@ -19,6 +19,6 @@ export async function GET(
       return NextResponse.json({ error: result.error.message }, { status: 422 });
     }
 
-    return NextResponse.json(result.value);
+    return NextResponse.json(DeveloperProfileResultPresenter.present(result.value));
   });
 }

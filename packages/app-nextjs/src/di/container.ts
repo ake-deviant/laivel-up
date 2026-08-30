@@ -5,6 +5,7 @@ import {
   ImprovementCollector,
   AiddReferentialLevelCalculatorService,
   EvaluateDeveloperProfileUseCase,
+  AxisImprovementService,
   createWeightedParallelismLevelCalculator,
   defaultParallelismThresholdsConfig,
   createInterventionLevelCalculator,
@@ -13,13 +14,21 @@ import {
   defaultSizeThresholdsConfig,
   createHarnessLevelCalculator,
   defaultHarnessThresholdsConfig,
-  ILevelImprovementBus,
+  createSizeSignalDetector,
+  createHarnessSignalDetector,
+  createInterventionSignalDetector,
+  createParallelismSignalDetector,
   IHarnessLevelCalculator,
   IInterventionLevelCalculator,
   IParallelismLevelCalculator,
   ISizeLevelCalculator,
+  IAxisSignalDetector,
   IDeveloperProfileRepository,
   IDeveloperProfileEvaluator,
+  SizeProfile,
+  HarnessProfile,
+  InterventionProfile,
+  ParallelismProfile,
 } from '@laivel-up/core';
 import { DI } from './di';
 
@@ -43,29 +52,33 @@ container
 
 container
   .bind(DI.INTERVENTION_LEVEL_CALCULATOR)
-  .toFactory(
-    (resolve: ResolveFunction) =>
-      createInterventionLevelCalculator(
-        defaultInterventionThresholdsConfig,
-        r<ILevelImprovementBus>(resolve, DI.IMPROVEMENT_COLLECTOR),
-      ),
-    'scoped',
-  );
+  .toFactory(() => createInterventionLevelCalculator(defaultInterventionThresholdsConfig));
 
 container
   .bind(DI.PARALLELISM_LEVEL_CALCULATOR)
-  .toFactory(
-    (resolve: ResolveFunction) =>
-      createWeightedParallelismLevelCalculator(
-        defaultParallelismThresholdsConfig,
-        r<ILevelImprovementBus>(resolve, DI.IMPROVEMENT_COLLECTOR),
-      ),
-    'scoped',
-  );
+  .toFactory(() => createWeightedParallelismLevelCalculator(defaultParallelismThresholdsConfig));
 
 container
   .bind(DI.HARNESS_LEVEL_CALCULATOR)
   .toFactory(() => createHarnessLevelCalculator(defaultHarnessThresholdsConfig));
+
+container
+  .bind(DI.SIZE_SIGNAL_DETECTOR)
+  .toFactory(() => createSizeSignalDetector(defaultSizeThresholdsConfig));
+
+container
+  .bind(DI.HARNESS_SIGNAL_DETECTOR)
+  .toFactory(() => createHarnessSignalDetector(defaultHarnessThresholdsConfig));
+
+container
+  .bind(DI.INTERVENTION_SIGNAL_DETECTOR)
+  .toFactory(() => createInterventionSignalDetector(defaultInterventionThresholdsConfig));
+
+container
+  .bind(DI.PARALLELISM_SIGNAL_DETECTOR)
+  .toFactory(() => createParallelismSignalDetector(defaultParallelismThresholdsConfig));
+
+container.bind(DI.AXIS_IMPROVEMENT_SERVICE).toClass(AxisImprovementService, []);
 
 container
   .bind(DI.DEVELOPER_PROFILE_EVALUATOR)
@@ -88,6 +101,11 @@ container
         r<IDeveloperProfileRepository>(resolve, DI.DEVELOPER_PROFILE_REPOSITORY),
         r<IDeveloperProfileEvaluator>(resolve, DI.DEVELOPER_PROFILE_EVALUATOR),
         r<ImprovementCollector>(resolve, DI.IMPROVEMENT_COLLECTOR),
+        r<IAxisSignalDetector<SizeProfile>>(resolve, DI.SIZE_SIGNAL_DETECTOR),
+        r<IAxisSignalDetector<HarnessProfile>>(resolve, DI.HARNESS_SIGNAL_DETECTOR),
+        r<IAxisSignalDetector<InterventionProfile>>(resolve, DI.INTERVENTION_SIGNAL_DETECTOR),
+        r<IAxisSignalDetector<ParallelismProfile>>(resolve, DI.PARALLELISM_SIGNAL_DETECTOR),
+        r<AxisImprovementService>(resolve, DI.AXIS_IMPROVEMENT_SERVICE),
       ),
     'scoped',
   );

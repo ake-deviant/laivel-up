@@ -48,7 +48,15 @@ describe('AIDD level calculator', () => {
         harnessLevel: AiddLevelValue.white,
         interventionLevel: AiddLevelValue.white,
         parallelismLevel: AiddLevelValue.white,
+        axisProfiles: {
+          size: profile.size,
+          harness: profile.harness,
+          intervention: profile.intervention,
+          parallelism: profile.parallelism,
+        },
+        signalMatrices: [],
         improvements: [],
+        busImprovements: [],
       });
     });
   });

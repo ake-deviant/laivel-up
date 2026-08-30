@@ -27,7 +27,15 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
       harnessLevel,
       interventionLevel,
       parallelismLevel,
+      axisProfiles: {
+        size: profile.size,
+        harness: profile.harness,
+        intervention: profile.intervention,
+        parallelism: profile.parallelism,
+      },
+      signalMatrices: [],
       improvements: [],
+      busImprovements: [],
     };
   }
 }

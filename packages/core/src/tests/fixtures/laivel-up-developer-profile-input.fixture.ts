@@ -95,4 +95,8 @@ export class LaivelUpDeveloperProfileInputFixture {
   static perceval(): LaivelUpProfileInput {
     return load('perceval');
   }
+
+  static gauvain(): LaivelUpProfileInput {
+    return load('gauvain');
+  }
 }

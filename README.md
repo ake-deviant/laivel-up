@@ -159,3 +159,5 @@ ILevelImprovementBus.emit(event)
 |---|---|---|
 | parallelism | `worktree_data_missing` | score atteint gold mais `hasWorktreeInclude` est null |
 | parallelism | `worktree_not_configured` | score atteint gold mais `hasWorktreeInclude` est false |
+
+---

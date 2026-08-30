@@ -1,0 +1,11 @@
+{
+  "profile_id": "gauvain",
+  "role": "développeur senior",
+  "experience_years": 8,
+  "stack": ["TypeScript", "Node.js", "React", "PostgreSQL"],
+  "team_size": 4,
+  "available": [
+    "git-activity.json",
+    "repo-context/"
+  ]
+}

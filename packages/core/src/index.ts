@@ -4,8 +4,17 @@ export { ok, err, Ok, Err } from './domain/shared/result';
 export { DomainError } from './domain/errors/domain.error';
 export { ParseError } from './domain/errors/parse.error';
 export type { DeveloperProfile } from './domain/entities/developer-profile';
-export type { DeveloperProfileResult } from './domain/entities/developer-profile-result';
+export type {
+  DeveloperProfileResult,
+  AxisProfiles,
+} from './domain/entities/developer-profile-result';
 export type { Improvement, ImprovementAxis } from './domain/entities/improvement';
+export type { AxisSignalMatrix } from './domain/entities/axis-signal-matrix';
+export type { Signal } from './domain/entities/signal';
+export type { SizeProfile } from './domain/entities/size-profile';
+export type { HarnessProfile } from './domain/entities/harness-profile';
+export type { InterventionProfile } from './domain/entities/intervention-profile';
+export type { ParallelismProfile } from './domain/entities/parallelism-profile';
 
 // Domain ports
 export type {
@@ -13,6 +22,7 @@ export type {
   LevelImprovementEvent,
 } from './domain/ports/level-improvement-bus.port';
 export { noopLevelImprovementBus } from './domain/ports/level-improvement-bus.port';
+export type { IAxisSignalDetector } from './domain/ports/axis-signal-detector.port';
 
 // Domain services
 export { ImprovementCollector } from './domain/services/improvement-collector';
@@ -29,6 +39,11 @@ export { defaultParallelismThresholdsConfig } from './domain/services/parallelis
 export { createHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
 export type { IHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
 export { defaultHarnessThresholdsConfig } from './domain/services/harness-thresholds.config';
+export { createSizeSignalDetector } from './domain/services/size-signal-detector';
+export { createHarnessSignalDetector } from './domain/services/harness-signal-detector';
+export { createInterventionSignalDetector } from './domain/services/intervention-signal-detector';
+export { createParallelismSignalDetector } from './domain/services/parallelism-signal-detector';
+export { AxisImprovementService } from './domain/services/axis-improvement.service';
 
 // Application ports
 export type { IProfileParser } from './application/ports/profile-parser.port';
@@ -43,3 +58,15 @@ export { EvaluateDeveloperProfileUseCase } from './application/use-cases/evaluat
 // Infrastructure
 export { ZodProfileParser } from './infrastructure/parsers/zod-profile-parser';
 export { LaivelUpDeveloperProfileRepository } from './infrastructure/repositories/laivel-up-developer-profile-repository';
+
+// Presentation
+export { DeveloperProfileResultPresenter } from './presentation/developer-profile-result.presenter';
+export type {
+  DeveloperProfileResultViewModel,
+  LevelViewModel,
+  AxisViewModel,
+  ImprovementViewModel,
+  SignalViewModel,
+  AxisFieldViewModel,
+  AxisFieldGroupViewModel,
+} from './presentation/developer-profile-result.view-model';

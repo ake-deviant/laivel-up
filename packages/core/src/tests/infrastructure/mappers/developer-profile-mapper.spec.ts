@@ -26,11 +26,11 @@ describe('DeveloperProfileMapper', () => {
     });
 
     it('should map size distribution from gitActivity', () => {
-      expect(profile.size.distribution?.xs).toBe(3);
-      expect(profile.size.distribution?.s).toBe(9);
-      expect(profile.size.distribution?.m).toBe(29);
-      expect(profile.size.distribution?.l).toBe(65);
-      expect(profile.size.distribution?.xl).toBe(48);
+      expect(profile.size.distribution?.xs).toBeCloseTo(3 / 154);
+      expect(profile.size.distribution?.s).toBeCloseTo(9 / 154);
+      expect(profile.size.distribution?.m).toBeCloseTo(29 / 154);
+      expect(profile.size.distribution?.l).toBeCloseTo(65 / 154);
+      expect(profile.size.distribution?.xl).toBeCloseTo(48 / 154);
     });
 
     it('should map size medians from gitActivity', () => {
@@ -86,5 +86,15 @@ describe('DeveloperProfileMapper', () => {
     it('should set hasWorktreeInclude to null when aiContext is absent', () => {
       expect(profile.parallelism.hasWorktreeInclude).toBeNull();
     });
+  });
+
+  it('should set size distribution to null when total pull requests is zero', () => {
+    const input = LaivelUpDeveloperProfileInputFixture.arthur();
+    if (!input.gitActivity?.pull_requests) throw new Error('Missing pull requests fixture');
+    input.gitActivity.pull_requests.total = 0;
+
+    const profile = DeveloperProfileMapper.toDomain(input);
+
+    expect(profile.size.distribution).toBeNull();
   });
 });

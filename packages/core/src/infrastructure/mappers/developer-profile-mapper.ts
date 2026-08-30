@@ -54,16 +54,18 @@ function mapProfile(input: LaivelUpProfileInput): Profile {
 
 function mapSize(gitActivity: LaivelUpGitActivityInput | null): SizeProfile {
   const pr = gitActivity?.pull_requests;
+  const totalPrCount = pr?.total ?? 0;
   return {
-    distribution: pr?.size_distribution
-      ? {
-          xs: pr.size_distribution.xs ?? null,
-          s: pr.size_distribution.s ?? null,
-          m: pr.size_distribution.m ?? null,
-          l: pr.size_distribution.l ?? null,
-          xl: pr.size_distribution.xl ?? null,
-        }
-      : null,
+    distribution:
+      pr?.size_distribution && totalPrCount > 0
+        ? {
+            xs: pr.size_distribution.xs / totalPrCount,
+            s: pr.size_distribution.s / totalPrCount,
+            m: pr.size_distribution.m / totalPrCount,
+            l: pr.size_distribution.l / totalPrCount,
+            xl: pr.size_distribution.xl / totalPrCount,
+          }
+        : null,
     medianFilesChanged: pr?.median_files_changed ?? null,
     medianLinesChanged: pr?.median_lines_changed ?? null,
   };

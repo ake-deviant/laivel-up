@@ -1,6 +1,5 @@
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
 import { InterventionProfile } from '../../../domain/entities/intervention-profile';
-import { noopLevelImprovementBus } from '../../../domain/ports/level-improvement-bus.port';
 import { createInterventionLevelCalculator } from '../../../domain/services/intervention-level-calculator.service';
 import { interventionThresholdsConfigFixture } from '../../fixtures/intervention-thresholds-config.fixture';
 
@@ -94,7 +93,7 @@ describe('Intervention level calculator', () => {
     },
   ])('when $label — assigns $expected level', ({ profile, expected }) => {
     // arrange
-    const calculator = createInterventionLevelCalculator(cfg, noopLevelImprovementBus);
+    const calculator = createInterventionLevelCalculator(cfg);
 
     // act
     const result = calculator.calculate(profile);
