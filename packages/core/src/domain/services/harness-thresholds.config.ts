@@ -19,8 +19,8 @@ export const defaultHarnessThresholdsConfig: HarnessThresholdsConfig = {
     rulesCount: 4,
   },
   levels: {
-    blue: { minContextEngineeringScore: 2 },
-    copper: { minAiConfigurationScore: 2 },
+    blue: { minContextEngineeringScore: 16 },
+    copper: { minAiConfigurationScore: 12 },
     gold: { maxCiRunsToGreen: 1 },
   },
 };
