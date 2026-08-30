@@ -16,6 +16,14 @@ const OPPORTUNITY_FIELD_LABEL: Record<string, string> = {
   docsPlansCount: 'Fichiers de plans',
   memoryCount: 'Fichiers mémoire',
   tasksCount: 'Fichiers de tâches',
+  xlRatio: 'Part des PRs XL (> 500 lignes)',
+  lxlRatio: 'Part des PRs L+XL (> 200 lignes)',
+  medianCorrectionCommitsAfterOpen: 'Commits de correction après ouverture (médiane)',
+  humanCommitRatio: 'Ratio de commits humains',
+  mergedWithoutHumanEditRatio: 'Ratio de PRs mergées sans édition humaine',
+  medianReviewCommentsReceived: 'Commentaires de review reçus (médiane)',
+  hasWorktreeInclude: 'Worktrees activés',
+  medianConcurrentBranches: 'Branches simultanées (médiane)',
 };
 
 export function EvaluationDashboard() {

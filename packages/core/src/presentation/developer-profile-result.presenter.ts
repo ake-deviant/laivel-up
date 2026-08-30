@@ -569,9 +569,16 @@ export class DeveloperProfileResultPresenter {
       missingDataGroups: toMissingDataGroups(result, axes),
       improvementOpportunities: (result.improvementOpportunities ?? []).map(
         (opportunity): ImprovementOpportunityViewModel => ({
-          ...opportunity,
+          axis: opportunity.axis,
+          field: opportunity.field,
           currentLevel: toLevel(opportunity.currentLevel),
           resultingLevel: toLevel(opportunity.resultingLevel),
+          levelGain: opportunity.levelGain,
+          scoreDelta: opportunity.scoreDelta,
+          effort: opportunity.effort,
+          fieldsToChange: opportunity.fieldsToChange,
+          overallResultingLevel: toLevel(opportunity.overallResultingLevel),
+          overallLevelGain: opportunity.overallLevelGain,
         }),
       ),
     };

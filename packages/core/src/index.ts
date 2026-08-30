@@ -45,9 +45,15 @@ export { createInterventionSignalDetector } from './domain/services/intervention
 export { createParallelismSignalDetector } from './domain/services/parallelism-signal-detector';
 export { AxisImprovementService } from './domain/services/axis-improvement.service';
 export { ImprovementOpportunityService } from './domain/services/improvement-opportunity.service';
-export type { ImprovementOpportunity } from './domain/services/improvement-opportunity.service';
+export type {
+  ImprovementOpportunity,
+  OpportunityAxis,
+} from './domain/services/improvement-opportunity.service';
 export { ImprovementFieldDefinitionRegistry } from './domain/services/improvement-field-definition-registry';
 export type { ImprovementFieldDefinition } from './domain/services/improvement-field-definition-registry';
+export { SizeImprovementOpportunityDetector } from './domain/services/size-improvement-opportunity-detector';
+export { InterventionImprovementOpportunityDetector } from './domain/services/intervention-improvement-opportunity-detector';
+export { ParallelismImprovementOpportunityDetector } from './domain/services/parallelism-improvement-opportunity-detector';
 export type {
   IImprovementOpportunityService,
   IAxisImprovementOpportunityDetector,

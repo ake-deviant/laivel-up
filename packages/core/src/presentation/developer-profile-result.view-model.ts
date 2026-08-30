@@ -44,7 +44,7 @@ export interface ImprovementViewModel {
 }
 
 export interface ImprovementOpportunityViewModel {
-  axis: 'harness';
+  axis: 'harness' | 'size' | 'intervention' | 'parallelism';
   field: string;
   currentLevel: LevelViewModel;
   resultingLevel: LevelViewModel;
@@ -52,6 +52,8 @@ export interface ImprovementOpportunityViewModel {
   scoreDelta: number;
   effort: 'low' | 'medium' | 'high';
   fieldsToChange: number;
+  overallResultingLevel: LevelViewModel;
+  overallLevelGain: number;
 }
 
 export interface FormatWarningViewModel {

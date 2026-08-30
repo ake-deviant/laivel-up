@@ -7,6 +7,9 @@ import {
   EvaluateDeveloperProfileUseCase,
   AxisImprovementService,
   ImprovementOpportunityService,
+  SizeImprovementOpportunityDetector,
+  InterventionImprovementOpportunityDetector,
+  ParallelismImprovementOpportunityDetector,
   createWeightedParallelismLevelCalculator,
   defaultParallelismThresholdsConfig,
   createInterventionLevelCalculator,
@@ -80,14 +83,24 @@ container
   .toFactory(() => createParallelismSignalDetector(defaultParallelismThresholdsConfig));
 
 container.bind(DI.AXIS_IMPROVEMENT_SERVICE).toClass(AxisImprovementService, []);
-container
-  .bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE)
-  .toFactory(
-    (resolve: ResolveFunction) =>
-      new ImprovementOpportunityService(
-        r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
-      ),
+container.bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE).toFactory((resolve: ResolveFunction) => {
+  const sizeCalculator = r<ISizeLevelCalculator>(resolve, DI.SIZE_LEVEL_CALCULATOR);
+  return new ImprovementOpportunityService(
+    r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
+    sizeCalculator,
+    r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
+    r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
+    new SizeImprovementOpportunityDetector(sizeCalculator, defaultSizeThresholdsConfig),
+    new InterventionImprovementOpportunityDetector(
+      r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
+      defaultInterventionThresholdsConfig,
+    ),
+    new ParallelismImprovementOpportunityDetector(
+      r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
+      defaultParallelismThresholdsConfig,
+    ),
   );
+});
 
 container
   .bind(DI.DEVELOPER_PROFILE_EVALUATOR)
