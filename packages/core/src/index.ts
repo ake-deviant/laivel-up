@@ -44,6 +44,14 @@ export { createHarnessSignalDetector } from './domain/services/harness-signal-de
 export { createInterventionSignalDetector } from './domain/services/intervention-signal-detector';
 export { createParallelismSignalDetector } from './domain/services/parallelism-signal-detector';
 export { AxisImprovementService } from './domain/services/axis-improvement.service';
+export { ImprovementOpportunityService } from './domain/services/improvement-opportunity.service';
+export type { ImprovementOpportunity } from './domain/services/improvement-opportunity.service';
+export { ImprovementFieldDefinitionRegistry } from './domain/services/improvement-field-definition-registry';
+export type { ImprovementFieldDefinition } from './domain/services/improvement-field-definition-registry';
+export type {
+  IImprovementOpportunityService,
+  IAxisImprovementOpportunityDetector,
+} from './domain/ports/improvement-opportunity-service.port';
 
 // Application ports
 export type { IProfileParser } from './application/ports/profile-parser.port';
@@ -69,6 +77,7 @@ export type {
   LevelViewModel,
   AxisViewModel,
   ImprovementViewModel,
+  ImprovementOpportunityViewModel,
   SignalViewModel,
   AxisFieldViewModel,
   AxisFieldGroupViewModel,

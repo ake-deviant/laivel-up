@@ -8,6 +8,16 @@ import { LevelScale } from './level-scale';
 import { MissingDataSummary } from './missing-data-summary';
 import { ImprovementCard } from './improvement-card';
 
+const OPPORTUNITY_FIELD_LABEL: Record<string, string> = {
+  claudeMd: 'Fichier CLAUDE.md',
+  docsContextCount: 'Fichiers de contexte',
+  docsSpecsCount: 'Fichiers de spécifications',
+  docsBrainstormCount: 'Fichiers de brainstorm',
+  docsPlansCount: 'Fichiers de plans',
+  memoryCount: 'Fichiers mémoire',
+  tasksCount: 'Fichiers de tâches',
+};
+
 export function EvaluationDashboard() {
   const [profileId, setProfileId] = useState('');
   const [evaluatedProfileId, setEvaluatedProfileId] = useState('');
@@ -269,6 +279,51 @@ export function EvaluationDashboard() {
                 <p className="mt-5 rounded-2xl bg-white px-5 py-4 text-sm text-stone-500">
                   Aucune piste d’amélioration n’est remontée pour ce profil.
                 </p>
+              )}
+              {result.improvementOpportunities.length > 0 && (
+                <div className="mt-7 border-t border-stone-200 pt-6">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-stone-900">
+                        Opportunités à fort impact
+                      </h3>
+                      <p className="mt-1 text-sm text-stone-500">
+                        Une seule modification simulée pouvant faire progresser un axe.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-orange-100 px-3 py-1.5 text-xs font-bold text-orange-800">
+                      {result.improvementOpportunities.length} opportunité
+                      {result.improvementOpportunities.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <ul className="mt-4 grid grid-cols-2 gap-3">
+                    {result.improvementOpportunities.map((opportunity) => (
+                      <li
+                        key={`${opportunity.axis}-${opportunity.field}`}
+                        className="rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-orange-800">
+                            {opportunity.axis}
+                          </p>
+                          <span className="text-xs font-bold text-orange-800">
+                            +{opportunity.levelGain} level{opportunity.levelGain > 1 ? 's' : ''}{' '}
+                            gagné{opportunity.levelGain > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <p className="mt-2 font-semibold text-stone-900">
+                          {OPPORTUNITY_FIELD_LABEL[opportunity.field] ?? opportunity.field}
+                        </p>
+                        <p className="mt-1 text-sm text-stone-600">
+                          {opportunity.currentLevel.label} → {opportunity.resultingLevel.label}
+                        </p>
+                        <p className="mt-1 text-xs text-orange-700">
+                          +{opportunity.scoreDelta} points · une seule modification
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </section>
           </div>

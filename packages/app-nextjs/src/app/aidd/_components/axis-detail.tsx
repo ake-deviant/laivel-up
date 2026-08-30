@@ -11,6 +11,7 @@ import { AxisFieldGroups } from './axis-field-groups';
 import { getLevelPresentation } from './aidd-level';
 import { LevelScale } from './level-scale';
 import { ImprovementCard } from './improvement-card';
+import { LevelMedal } from './level-medal';
 
 interface AxisDetailProps {
   profileId: string;
@@ -115,11 +116,7 @@ export function AxisDetail({ profileId, axisName }: AxisDetailProps) {
                 </p>
                 <div className="mt-4 flex items-baseline gap-4">
                   <h1 className="text-5xl font-semibold tracking-tight">{axis.label}</h1>
-                  <span
-                    className={`rounded-full px-3 py-1 text-sm font-bold ${presentation.background} ${presentation.text}`}
-                  >
-                    {axis.level.label}
-                  </span>
+                  <LevelMedal level={axis.level} />
                 </div>
                 <div className="mt-8 max-w-xl">
                   <LevelScale level={axis.level} />

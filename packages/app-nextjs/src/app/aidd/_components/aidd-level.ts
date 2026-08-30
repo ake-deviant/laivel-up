@@ -9,9 +9,9 @@ export const LEVEL_PRESENTATION: Record<
   { accent: string; background: string; border: string; text: string; description: string }
 > = {
   white: {
-    accent: 'bg-stone-300',
-    background: 'bg-stone-100',
-    border: 'border-stone-300',
+    accent: 'bg-white ring-1 ring-inset ring-stone-400',
+    background: 'bg-white',
+    border: 'border-stone-400',
     text: 'text-stone-700',
     description: 'Les premiers usages restent à observer.',
   },

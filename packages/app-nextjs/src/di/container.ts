@@ -6,6 +6,7 @@ import {
   AiddReferentialLevelCalculatorService,
   EvaluateDeveloperProfileUseCase,
   AxisImprovementService,
+  ImprovementOpportunityService,
   createWeightedParallelismLevelCalculator,
   defaultParallelismThresholdsConfig,
   createInterventionLevelCalculator,
@@ -79,6 +80,14 @@ container
   .toFactory(() => createParallelismSignalDetector(defaultParallelismThresholdsConfig));
 
 container.bind(DI.AXIS_IMPROVEMENT_SERVICE).toClass(AxisImprovementService, []);
+container
+  .bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE)
+  .toFactory(
+    (resolve: ResolveFunction) =>
+      new ImprovementOpportunityService(
+        r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
+      ),
+  );
 
 container
   .bind(DI.DEVELOPER_PROFILE_EVALUATOR)
@@ -106,6 +115,7 @@ container
         r<IAxisSignalDetector<InterventionProfile>>(resolve, DI.INTERVENTION_SIGNAL_DETECTOR),
         r<IAxisSignalDetector<ParallelismProfile>>(resolve, DI.PARALLELISM_SIGNAL_DETECTOR),
         r<AxisImprovementService>(resolve, DI.AXIS_IMPROVEMENT_SERVICE),
+        r<ImprovementOpportunityService>(resolve, DI.IMPROVEMENT_OPPORTUNITY_SERVICE),
       ),
     'scoped',
   );

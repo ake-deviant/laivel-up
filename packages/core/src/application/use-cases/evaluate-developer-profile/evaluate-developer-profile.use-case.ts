@@ -12,6 +12,7 @@ import { DeveloperInvalidProfileError } from '../../../domain/errors/developer-i
 import { DomainError } from '../../../domain/errors/domain.error';
 import { DeveloperProfileTriageService } from '../../../domain/services/developer-profile-triage.service';
 import { Result, ok, err } from '../../../domain/shared/result';
+import { ImprovementOpportunityService } from '../../../domain/services/improvement-opportunity.service';
 
 export class EvaluateDeveloperProfileUseCase {
   private readonly triage = new DeveloperProfileTriageService();
@@ -25,6 +26,7 @@ export class EvaluateDeveloperProfileUseCase {
     private readonly interventionDetector: IAxisSignalDetector<InterventionProfile>,
     private readonly parallelismDetector: IAxisSignalDetector<ParallelismProfile>,
     private readonly improvementService: AxisImprovementService,
+    private readonly opportunityService?: ImprovementOpportunityService,
   ) {}
 
   execute(profileId: string): Result<DeveloperProfileResult, DomainError> {
@@ -56,6 +58,7 @@ export class EvaluateDeveloperProfileUseCase {
       formatWarnings,
       impactingNulls: report.impactingNulls,
       ignoredNulls: report.ignoredNulls,
+      improvementOpportunities: this.opportunityService?.detect(profile),
     });
   }
 }

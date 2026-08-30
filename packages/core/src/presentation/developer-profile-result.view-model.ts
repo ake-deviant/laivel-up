@@ -43,6 +43,17 @@ export interface ImprovementViewModel {
   targetLevel?: AiddLevelValue;
 }
 
+export interface ImprovementOpportunityViewModel {
+  axis: 'harness';
+  field: string;
+  currentLevel: LevelViewModel;
+  resultingLevel: LevelViewModel;
+  levelGain: number;
+  scoreDelta: number;
+  effort: 'low' | 'medium' | 'high';
+  fieldsToChange: number;
+}
+
 export interface FormatWarningViewModel {
   field: string;
   reason: string;
@@ -70,4 +81,5 @@ export interface DeveloperProfileResultViewModel {
   busImprovements: ImprovementViewModel[];
   formatWarnings: FormatWarningViewModel[];
   missingDataGroups: MissingDataGroupViewModel[];
+  improvementOpportunities: ImprovementOpportunityViewModel[];
 }

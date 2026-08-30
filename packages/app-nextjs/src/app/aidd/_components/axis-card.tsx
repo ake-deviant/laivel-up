@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { AxisViewModel } from '@laivel-up/core';
-import { getLevelPresentation } from './aidd-level';
 import { LevelScale } from './level-scale';
+import { LevelMedal } from './level-medal';
 
 const AXIS_DESCRIPTION: Record<AxisViewModel['axis'], string> = {
   size: 'Taille habituelle des réalisations confiées à l’IA',
@@ -20,8 +20,6 @@ function formatSignalValue(name: string, value: number | boolean | null) {
 }
 
 export function AxisCard({ axis, profileId }: { axis: AxisViewModel; profileId: string }) {
-  const levelPresentation = getLevelPresentation(axis.level);
-
   return (
     <article className="flex flex-col rounded-[28px] border border-stone-200 bg-white p-6 shadow-[0_20px_55px_-38px_rgba(41,37,36,0.55)]">
       <div className="flex items-start justify-between gap-5">
@@ -34,11 +32,7 @@ export function AxisCard({ axis, profileId }: { axis: AxisViewModel; profileId: 
             {AXIS_DESCRIPTION[axis.axis]}
           </p>
         </div>
-        <div
-          className={`rounded-full border px-3.5 py-1.5 text-sm font-bold ${levelPresentation.background} ${levelPresentation.border} ${levelPresentation.text}`}
-        >
-          {axis.level.label}
-        </div>
+        <LevelMedal level={axis.level} compact />
       </div>
 
       <div className="mt-6">

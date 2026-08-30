@@ -6,6 +6,7 @@ import { HarnessProfile } from './harness-profile';
 import { InterventionProfile } from './intervention-profile';
 import { ParallelismProfile } from './parallelism-profile';
 import { FormatWarning } from '../shared/format-warning';
+import { ImprovementOpportunity } from '../services/improvement-opportunity.service';
 
 export interface AxisProfiles {
   size: SizeProfile;
@@ -27,4 +28,5 @@ export interface DeveloperProfileResult {
   formatWarnings: FormatWarning[];
   impactingNulls: string[];
   ignoredNulls: string[];
+  improvementOpportunities?: ImprovementOpportunity[];
 }

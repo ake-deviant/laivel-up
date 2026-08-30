@@ -12,6 +12,7 @@ import {
   MissingDataAxisViewModel,
   MissingDataFieldViewModel,
   MissingDataGroupViewModel,
+  ImprovementOpportunityViewModel,
 } from './developer-profile-result.view-model';
 
 const LEVEL_LABEL: Record<AiddLevelValue, string> = {
@@ -566,6 +567,13 @@ export class DeveloperProfileResultPresenter {
         reason: warning.reason,
       })),
       missingDataGroups: toMissingDataGroups(result, axes),
+      improvementOpportunities: (result.improvementOpportunities ?? []).map(
+        (opportunity): ImprovementOpportunityViewModel => ({
+          ...opportunity,
+          currentLevel: toLevel(opportunity.currentLevel),
+          resultingLevel: toLevel(opportunity.resultingLevel),
+        }),
+      ),
     };
   }
 }
