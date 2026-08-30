@@ -4,6 +4,7 @@ export { ok, err, Ok, Err } from './domain/shared/result';
 export { DomainError } from './domain/errors/domain.error';
 export { ParseError } from './domain/errors/parse.error';
 export type { DeveloperProfile } from './domain/entities/developer-profile';
+export type { DeveloperProfileSummary } from './domain/entities/developer-profile-summary';
 export type {
   DeveloperProfileResult,
   AxisProfiles,
@@ -16,6 +17,11 @@ export type { HarnessProfile } from './domain/entities/harness-profile';
 export type { InterventionProfile } from './domain/entities/intervention-profile';
 export type { ParallelismProfile } from './domain/entities/parallelism-profile';
 export type { VelocityProfile } from './domain/entities/velocity-profile';
+export type { AiddEvaluatorConfig, AxisName } from './domain/entities/aidd-evaluator-config';
+export type {
+  HarnessContextEngineeringWeights,
+  HarnessAiConfigurationWeights,
+} from './domain/services/harness-level-calculator.service';
 
 // Domain ports
 export type {
@@ -82,6 +88,7 @@ export type { IDeveloperProfileEvaluator } from './domain/ports/developer-profil
 
 // Application use cases
 export { EvaluateDeveloperProfileUseCase } from './application/use-cases/evaluate-developer-profile/evaluate-developer-profile.use-case';
+export { ListDeveloperProfilesUseCase } from './application/use-cases/list-developer-profiles/list-developer-profiles.use-case';
 
 // Infrastructure
 export { ZodProfileParser } from './infrastructure/parsers/zod-profile-parser';

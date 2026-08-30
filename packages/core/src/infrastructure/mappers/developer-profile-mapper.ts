@@ -16,6 +16,7 @@ const AVAILABLE_TO_DATA_SOURCE: Partial<Record<string, DataSource>> = {
   'pull-requests.json': DataSource.pullRequests,
   'sonar-measures.json': DataSource.sonar,
   'repo-context/': DataSource.repoContext,
+  'sprint-metrics.json': DataSource.sprintMetrics,
   'declaratif.md': DataSource.declarative,
   'session.md': DataSource.session,
   'code/': DataSource.code,

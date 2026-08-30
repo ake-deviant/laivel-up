@@ -5,6 +5,7 @@ import {
   ImprovementCollector,
   AiddReferentialLevelCalculatorService,
   EvaluateDeveloperProfileUseCase,
+  ListDeveloperProfilesUseCase,
   AxisImprovementService,
   ImprovementOpportunityService,
   SizeImprovementOpportunityDetector,
@@ -33,7 +34,6 @@ import {
   IVelocityLevelCalculator,
   IAxisSignalDetector,
   IDeveloperProfileRepository,
-  IDeveloperProfileEvaluator,
   SizeProfile,
   HarnessProfile,
   InterventionProfile,
@@ -43,6 +43,7 @@ import {
   IAxisReadinessChecker,
 } from '@laivel-up/core';
 import { DI } from './di';
+import type { EvaluationConfig } from '../types/evaluation-config';
 
 const r = <T>(resolve: ResolveFunction, token: symbol): T => resolve(token) as T;
 
@@ -124,37 +125,48 @@ container.bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE).toFactory((resolve: ResolveFu
   );
 });
 
-container
-  .bind(DI.DEVELOPER_PROFILE_EVALUATOR)
-  .toFactory(
-    (resolve: ResolveFunction) =>
-      new AiddReferentialLevelCalculatorService(
-        r<ISizeLevelCalculator>(resolve, DI.SIZE_LEVEL_CALCULATOR),
-        r<IHarnessLevelCalculator>(resolve, DI.HARNESS_LEVEL_CALCULATOR),
-        r<IInterventionLevelCalculator>(resolve, DI.INTERVENTION_LEVEL_CALCULATOR),
-        r<IParallelismLevelCalculator>(resolve, DI.PARALLELISM_LEVEL_CALCULATOR),
-        r<IVelocityLevelCalculator>(resolve, DI.VELOCITY_LEVEL_CALCULATOR),
-        new VelocityReadinessChecker(),
-      ),
-    'scoped',
+const g = <T>(token: symbol): T => container.get<T>(token);
+
+export function buildEvaluateUseCase(config: EvaluationConfig): EvaluateDeveloperProfileUseCase {
+  const harnessConfig = {
+    ...defaultHarnessThresholdsConfig,
+    contextEngineeringWeights: config.harnessContextWeights,
+    aiConfigurationWeights: config.harnessAiWeights,
+  };
+  const parallelismConfig = {
+    ...defaultParallelismThresholdsConfig,
+    weights: config.parallelismWeights,
+  };
+
+  return new EvaluateDeveloperProfileUseCase(
+    g<IDeveloperProfileRepository>(DI.DEVELOPER_PROFILE_REPOSITORY),
+    new AiddReferentialLevelCalculatorService(
+      g<ISizeLevelCalculator>(DI.SIZE_LEVEL_CALCULATOR),
+      createHarnessLevelCalculator(harnessConfig),
+      g<IInterventionLevelCalculator>(DI.INTERVENTION_LEVEL_CALCULATOR),
+      createWeightedParallelismLevelCalculator(parallelismConfig),
+      g<IVelocityLevelCalculator>(DI.VELOCITY_LEVEL_CALCULATOR),
+      new VelocityReadinessChecker(),
+      { nonBlockingAxes: config.nonBlockingAxes },
+    ),
+    g<ImprovementCollector>(DI.IMPROVEMENT_COLLECTOR),
+    g<IAxisSignalDetector<SizeProfile>>(DI.SIZE_SIGNAL_DETECTOR),
+    g<IAxisSignalDetector<HarnessProfile>>(DI.HARNESS_SIGNAL_DETECTOR),
+    g<IAxisSignalDetector<InterventionProfile>>(DI.INTERVENTION_SIGNAL_DETECTOR),
+    g<IAxisSignalDetector<ParallelismProfile>>(DI.PARALLELISM_SIGNAL_DETECTOR),
+    g<IAxisSignalDetector<VelocityProfile>>(DI.VELOCITY_SIGNAL_DETECTOR),
+    new VelocityReadinessChecker() as IAxisReadinessChecker<VelocityProfile>,
+    g<AxisImprovementService>(DI.AXIS_IMPROVEMENT_SERVICE),
+    g<ImprovementOpportunityService>(DI.IMPROVEMENT_OPPORTUNITY_SERVICE),
   );
+}
 
 container
-  .bind(DI.EVALUATE_DEVELOPER_PROFILE_USE_CASE)
+  .bind(DI.LIST_DEVELOPER_PROFILES_USE_CASE)
   .toFactory(
     (resolve: ResolveFunction) =>
-      new EvaluateDeveloperProfileUseCase(
+      new ListDeveloperProfilesUseCase(
         r<IDeveloperProfileRepository>(resolve, DI.DEVELOPER_PROFILE_REPOSITORY),
-        r<IDeveloperProfileEvaluator>(resolve, DI.DEVELOPER_PROFILE_EVALUATOR),
-        r<ImprovementCollector>(resolve, DI.IMPROVEMENT_COLLECTOR),
-        r<IAxisSignalDetector<SizeProfile>>(resolve, DI.SIZE_SIGNAL_DETECTOR),
-        r<IAxisSignalDetector<HarnessProfile>>(resolve, DI.HARNESS_SIGNAL_DETECTOR),
-        r<IAxisSignalDetector<InterventionProfile>>(resolve, DI.INTERVENTION_SIGNAL_DETECTOR),
-        r<IAxisSignalDetector<ParallelismProfile>>(resolve, DI.PARALLELISM_SIGNAL_DETECTOR),
-        r<IAxisSignalDetector<VelocityProfile>>(resolve, DI.VELOCITY_SIGNAL_DETECTOR),
-        new VelocityReadinessChecker() as IAxisReadinessChecker<VelocityProfile>,
-        r<AxisImprovementService>(resolve, DI.AXIS_IMPROVEMENT_SERVICE),
-        r<ImprovementOpportunityService>(resolve, DI.IMPROVEMENT_OPPORTUNITY_SERVICE),
       ),
     'scoped',
   );

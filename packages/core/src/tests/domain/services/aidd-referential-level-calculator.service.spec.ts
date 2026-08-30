@@ -15,6 +15,7 @@ import {
   AxisReadiness,
 } from '../../../domain/ports/axis-readiness-checker.port';
 import { DeveloperProfileFixture } from '../../fixtures/developer-profile.fixture';
+import { AiddEvaluatorConfigFixture } from '../../fixtures/aidd-evaluator-config.fixture';
 
 const stubSizeCalculator = (level: AiddLevelValue): ISizeLevelCalculator => ({
   calculate: (_profile: SizeProfile) => level,
@@ -118,6 +119,93 @@ describe('AIDD level calculator', () => {
       // assert
       expect(result.overallLevel).toBe(AiddLevelValue.blue);
       expect(result.velocityLevel).toBe(AiddLevelValue.blue);
+    });
+  });
+
+  describe('when velocity is configured as non-blocking', () => {
+    it('when velocity is calculable and red — does not drag overallLevel down', () => {
+      // arrange
+      const calculator = new AiddReferentialLevelCalculatorService(
+        stubSizeCalculator(AiddLevelValue.gold),
+        stubHarnessCalculator(AiddLevelValue.gold),
+        stubInterventionCalculator(AiddLevelValue.gold),
+        stubParallelismCalculator(AiddLevelValue.gold),
+        stubVelocityCalculator(AiddLevelValue.red),
+        stubVelocityReadinessChecker(calculable),
+        AiddEvaluatorConfigFixture.withVelocityNonBlocking(),
+      );
+      const profile = DeveloperProfileFixture.valid();
+
+      // act
+      const result = calculator.evaluate(profile);
+
+      // assert
+      expect(result.overallLevel).toBe(AiddLevelValue.gold);
+      expect(result.velocityLevel).toBe(AiddLevelValue.red);
+    });
+
+    it('when velocity is calculable and white — overallLevel is not affected', () => {
+      // arrange
+      const calculator = new AiddReferentialLevelCalculatorService(
+        stubSizeCalculator(AiddLevelValue.silver),
+        stubHarnessCalculator(AiddLevelValue.silver),
+        stubInterventionCalculator(AiddLevelValue.silver),
+        stubParallelismCalculator(AiddLevelValue.silver),
+        stubVelocityCalculator(AiddLevelValue.white),
+        stubVelocityReadinessChecker(calculable),
+        AiddEvaluatorConfigFixture.withVelocityNonBlocking(),
+      );
+      const profile = DeveloperProfileFixture.valid();
+
+      // act
+      const result = calculator.evaluate(profile);
+
+      // assert
+      expect(result.overallLevel).toBe(AiddLevelValue.silver);
+      expect(result.velocityLevel).toBe(AiddLevelValue.white);
+    });
+
+    it('when velocity is not calculable — overallLevel is still driven by structural axes', () => {
+      // arrange
+      const calculator = new AiddReferentialLevelCalculatorService(
+        stubSizeCalculator(AiddLevelValue.copper),
+        stubHarnessCalculator(AiddLevelValue.copper),
+        stubInterventionCalculator(AiddLevelValue.copper),
+        stubParallelismCalculator(AiddLevelValue.copper),
+        stubVelocityCalculator(AiddLevelValue.red),
+        stubVelocityReadinessChecker(notCalculable),
+        AiddEvaluatorConfigFixture.withVelocityNonBlocking(),
+      );
+      const profile = DeveloperProfileFixture.valid();
+
+      // act
+      const result = calculator.evaluate(profile);
+
+      // assert
+      expect(result.overallLevel).toBe(AiddLevelValue.copper);
+    });
+  });
+
+  describe('when all axes are blocking (explicit config)', () => {
+    it('when velocity is calculable and red — drags overallLevel down', () => {
+      // arrange
+      const calculator = new AiddReferentialLevelCalculatorService(
+        stubSizeCalculator(AiddLevelValue.gold),
+        stubHarnessCalculator(AiddLevelValue.gold),
+        stubInterventionCalculator(AiddLevelValue.gold),
+        stubParallelismCalculator(AiddLevelValue.gold),
+        stubVelocityCalculator(AiddLevelValue.red),
+        stubVelocityReadinessChecker(calculable),
+        AiddEvaluatorConfigFixture.allBlocking(),
+      );
+      const profile = DeveloperProfileFixture.valid();
+
+      // act
+      const result = calculator.evaluate(profile);
+
+      // assert
+      expect(result.overallLevel).toBe(AiddLevelValue.red);
+      expect(result.velocityLevel).toBe(AiddLevelValue.red);
     });
   });
 });

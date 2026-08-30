@@ -1,12 +1,16 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { DeveloperProfileResultViewModel } from '@laivel-up/core';
 import { AxisCard } from './axis-card';
 import { getLevelPresentation } from './aidd-level';
 import { LevelScale } from './level-scale';
 import { MissingDataSummary } from './missing-data-summary';
 import { ImprovementCard } from './improvement-card';
+import { ProfileList } from './profile-list';
+import { useEvaluatorConfig } from '../../../hooks/use-evaluator-config';
+import type { EvaluationConfig } from '../../../types/evaluation-config';
 
 const OPPORTUNITY_FIELD_LABEL: Record<string, string> = {
   claudeMd: 'Fichier CLAUDE.md',
@@ -32,13 +36,20 @@ export function EvaluationDashboard() {
   const [result, setResult] = useState<DeveloperProfileResultViewModel | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showProfileList, setShowProfileList] = useState(false);
+  const { config: evaluationConfig } = useEvaluatorConfig();
 
-  async function loadProfile(normalizedProfileId: string) {
+  async function loadProfile(normalizedProfileId: string, configOverride?: EvaluationConfig) {
+    setShowProfileList(false);
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/evaluate/${encodeURIComponent(normalizedProfileId)}`);
+      const response = await fetch(`/api/evaluate/${encodeURIComponent(normalizedProfileId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(configOverride ?? evaluationConfig),
+      });
       const payload: unknown = await response.json();
 
       if (!response.ok) {
@@ -94,52 +105,59 @@ export function EvaluationDashboard() {
               <p className="text-xs text-stone-500">AI-Driven Development</p>
             </div>
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-400">
-            Référentiel de maîtrise
-          </p>
-        </header>
-      </div>
-
-      <div className="mx-auto w-[1180px] py-12">
-        <section className="grid grid-cols-[1fr_440px] items-end gap-16">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-lime-700">
-              Évaluation factuelle
-            </p>
-            <h1 className="mt-4 max-w-2xl text-5xl font-semibold leading-[1.05] tracking-[-0.045em]">
-              Comprendre où se situe une pratique AI-Driven Development.
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              Le résultat croise cinq axes observables. Le `level` global correspond au niveau
-              commun réellement atteint.
-            </p>
-          </div>
-
-          <form
-            onSubmit={evaluateProfile}
-            className="rounded-[28px] bg-stone-950 p-3 shadow-2xl shadow-stone-400/30"
-          >
-            <label htmlFor="profile-id" className="sr-only">
-              Identifiant du profil
-            </label>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/aidd/config"
+              className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-xs font-semibold text-stone-600 transition hover:border-stone-400 hover:text-stone-900"
+            >
+              Config
+            </Link>
+            <button
+              onClick={() => setShowProfileList((v) => !v)}
+              className={`rounded-xl border px-4 py-2 text-xs font-semibold transition ${
+                showProfileList
+                  ? 'border-stone-900 bg-stone-900 text-white'
+                  : 'border-stone-200 bg-white text-stone-600 hover:border-stone-400 hover:text-stone-900'
+              }`}
+            >
+              Profils
+            </button>
+            <form onSubmit={evaluateProfile} className="flex items-center gap-2">
+              <label htmlFor="profile-id" className="sr-only">
+                Identifiant du profil
+              </label>
               <input
                 id="profile-id"
                 value={profileId}
                 onChange={(event) => setProfileId(event.target.value)}
                 placeholder="Ex. gauvain"
                 autoComplete="off"
-                className="min-w-0 flex-1 rounded-2xl border border-stone-700 bg-stone-900 px-5 py-4 text-sm text-white outline-none placeholder:text-stone-500 focus:border-lime-300"
+                className="w-40 rounded-xl border border-stone-200 bg-white px-3 py-2 text-xs text-stone-900 outline-none placeholder:text-stone-400 focus:border-stone-400"
               />
               <button
                 type="submit"
                 disabled={isLoading || !profileId.trim()}
-                className="rounded-2xl bg-lime-300 px-5 py-4 text-sm font-bold text-stone-950 transition hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-xl bg-stone-900 px-3 py-2 text-xs font-bold text-white transition hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {isLoading ? 'Évaluation…' : 'Évaluer'}
+                {isLoading ? '…' : 'Évaluer'}
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
+        </header>
+      </div>
+
+      <div className="mx-auto w-[1180px] py-12">
+        <section>
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-lime-700">
+            Évaluation factuelle
+          </p>
+          <h1 className="mt-4 max-w-2xl text-5xl font-semibold leading-[1.05] tracking-[-0.045em]">
+            Comprendre où se situe une pratique AI-Driven Development.
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
+            Le résultat croise cinq axes observables. Le `level` global correspond au niveau commun
+            réellement atteint.
+          </p>
         </section>
 
         {error && (
@@ -151,23 +169,7 @@ export function EvaluationDashboard() {
           </div>
         )}
 
-        {!result && !error && (
-          <section className="mt-14 grid grid-cols-5 gap-4 border-t border-stone-300 pt-8">
-            {[
-              ['01', 'size', 'Taille des réalisations'],
-              ['02', 'harness', "Environnement de l'IA"],
-              ['03', 'intervention', 'Reprises humaines'],
-              ['04', 'parallelism', 'Travaux simultanés'],
-              ['05', 'velocity', 'Cadence de livraison'],
-            ].map(([number, axis, description]) => (
-              <div key={axis} className="rounded-2xl border border-stone-200 bg-[#fbfaf7] p-5">
-                <p className="text-xs font-bold text-stone-400">{number}</p>
-                <p className="mt-8 font-semibold">{axis}</p>
-                <p className="mt-1 text-sm text-stone-500">{description}</p>
-              </div>
-            ))}
-          </section>
-        )}
+        {((!result && !error) || showProfileList) && <ProfileList onSelect={loadProfile} />}
 
         {result && overallPresentation && (
           <div aria-live="polite" className="mt-14 space-y-8">

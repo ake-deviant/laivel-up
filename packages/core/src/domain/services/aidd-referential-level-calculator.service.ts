@@ -9,6 +9,9 @@ import { DeveloperProfileResult } from '../entities/developer-profile-result';
 import { AiddLevelValue, lowestLevel } from '../entities/aidd-level-value';
 import { IAxisReadinessChecker } from '../ports/axis-readiness-checker.port';
 import { VelocityProfile } from '../entities/velocity-profile';
+import { AiddEvaluatorConfig } from '../entities/aidd-evaluator-config';
+
+const DEFAULT_CONFIG: AiddEvaluatorConfig = { nonBlockingAxes: [] };
 
 export class AiddReferentialLevelCalculatorService implements IDeveloperProfileEvaluator {
   constructor(
@@ -18,6 +21,7 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
     private readonly parallelismCalculator: IParallelismLevelCalculator,
     private readonly velocityCalculator: IVelocityLevelCalculator,
     private readonly velocityReadinessChecker: IAxisReadinessChecker<VelocityProfile>,
+    private readonly config: AiddEvaluatorConfig = DEFAULT_CONFIG,
   ) {}
 
   evaluate(profile: DeveloperProfile): DeveloperProfileResult {
@@ -30,13 +34,15 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
       ? this.velocityCalculator.calculate(profile.velocity)
       : AiddLevelValue.white;
 
-    const axisLevels: AiddLevelValue[] = [
-      sizeLevel,
-      harnessLevel,
-      interventionLevel,
-      parallelismLevel,
-    ];
-    if (velocityReadiness.calculable) axisLevels.push(velocityLevel);
+    const nonBlocking = new Set(this.config.nonBlockingAxes);
+
+    const axisLevels: AiddLevelValue[] = [];
+    if (!nonBlocking.has('size')) axisLevels.push(sizeLevel);
+    if (!nonBlocking.has('harness')) axisLevels.push(harnessLevel);
+    if (!nonBlocking.has('intervention')) axisLevels.push(interventionLevel);
+    if (!nonBlocking.has('parallelism')) axisLevels.push(parallelismLevel);
+    if (velocityReadiness.calculable && !nonBlocking.has('velocity'))
+      axisLevels.push(velocityLevel);
 
     return {
       overallLevel: lowestLevel(...axisLevels),
