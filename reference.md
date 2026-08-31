@@ -57,6 +57,8 @@ laivel-up/
 
 Créer un dossier dans `data/profiles/profiles/<profileId>/`.
 
+La procédure reproductible complète, incluant `PROFILES_BASE_DIR`, `.env.local`, un profile fictif à copier et les étapes de vérification, est disponible dans [`doc/profiles.md`](doc/profiles.md).
+
 ### Fichiers requis
 
 | Fichier | Contenu |
@@ -120,7 +122,7 @@ Un seul axe en retard bloque le level global. `velocity` et `deliveryConfidence`
 
 ## Configuration de l'évaluation
 
-La configuration est ajustable depuis la page **Config** de l'interface. Elle est persistée dans le `localStorage` et transmise à chaque appel d'évaluation. Un bouton **Rétablir la configuration initiale** remet toutes les valeurs à zéro.
+La configuration est ajustable depuis la page **Config** de l'interface. Elle est persistée dans le `localStorage` et transmise à chaque appel d'évaluation. Un bouton **Rétablir la configuration initiale** restaure les valeurs par défaut.
 
 ### Algorithmes par axe
 
@@ -171,7 +173,7 @@ Score minimum requis par level :
 | green | 15 |
 | copper | 20 |
 | silver | 25 |
-| gold | 20 |
+| gold | 30 |
 
 Le gold exige en plus `hasWorktreeInclude = true` (présence d'un `.worktreeinclude`). Ce critère est un gate non compensable, indépendant du score.
 

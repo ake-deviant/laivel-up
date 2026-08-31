@@ -27,12 +27,20 @@ Le scoring est déterministe. Aucun LLM n'intervient dans le calcul. Le verdict 
 ```bash
 npm install
 
-# Application
-cd packages/app-nextjs && npm run dev
+# Préparer la configuration locale
+cp packages/app-nextjs/.env.example packages/app-nextjs/.env.local
+
+# Ajouter un profile fictif sous data/profiles/profiles
+# Voir la documentation Profiles ci-dessous
+
+# Application, depuis la racine
+npm run dev --workspace=packages/app-nextjs
 
 # Tests
 npm test
 ```
+
+→ [Installer ou ajouter des profiles](doc/profiles.md)
 
 ## Modularité
 
@@ -124,7 +132,7 @@ Config par défaut : `packages/core/src/domain/services/parallelism-thresholds.c
 | green | 15 | — |
 | copper | 20 | — |
 | silver | 25 | — |
-| gold | 20 | worktree requis |
+| gold | 30 | worktree requis |
 
 Poids par défaut : `median × 5 + max × 1`. Algorithme alternatif `median-only` : seule la médiane contribue au score.
 

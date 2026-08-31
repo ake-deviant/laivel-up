@@ -19,6 +19,7 @@ export function AppHeader({
     { href: evaluationHref, label: 'Évaluation', active: pathname === evaluationHref },
     { href: profilesHref, label: 'Profils', active: pathname === profilesHref },
     { href: configHref, label: 'Configuration', active: pathname === configHref },
+    { href: '/demo', label: 'Démo', active: pathname === '/demo' },
   ];
 
   return (
