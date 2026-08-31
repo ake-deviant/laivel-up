@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DeveloperProfileResultPresenter } from '@laivel-up/core';
 import { container, buildEvaluateUseCase } from '../../../../di/container';
-import type { EvaluationConfig } from '../../../../types/evaluation-config';
-import {
-  defaultParallelismThresholdsConfig,
-  defaultHarnessThresholdsConfig,
-} from '@laivel-up/core';
-
-const DEFAULT_CONFIG: EvaluationConfig = {
-  nonBlockingAxes: ['velocity'],
-  parallelismWeights: defaultParallelismThresholdsConfig.weights,
-  harnessContextWeights: defaultHarnessThresholdsConfig.contextEngineeringWeights,
-  harnessAiWeights: defaultHarnessThresholdsConfig.aiConfigurationWeights,
-};
+import { mergeEvaluationConfig } from '../../../../config/default-evaluation-config';
 
 export async function POST(
   req: NextRequest,
@@ -20,7 +9,7 @@ export async function POST(
 ) {
   const { profileId } = await params;
   const body = await req.json().catch(() => ({}));
-  const config: EvaluationConfig = { ...DEFAULT_CONFIG, ...(body as Partial<EvaluationConfig>) };
+  const config = mergeEvaluationConfig(body);
 
   return container.runInScope(() => {
     const useCase = buildEvaluateUseCase(config);

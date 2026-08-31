@@ -11,13 +11,19 @@ import {
   SizeImprovementOpportunityDetector,
   InterventionImprovementOpportunityDetector,
   ParallelismImprovementOpportunityDetector,
+  createParallelismLevelCalculator,
   createWeightedParallelismLevelCalculator,
+  WeightedParallelismScoringStrategy,
+  MedianOnlyParallelismScoringStrategy,
   defaultParallelismThresholdsConfig,
   createInterventionLevelCalculator,
   defaultInterventionThresholdsConfig,
   SizeLevelCalculatorService,
   defaultSizeThresholdsConfig,
   createHarnessLevelCalculator,
+  createCapabilityGatesHarnessLevelCalculator,
+  createCapabilityGatesHarnessSignalDetector,
+  defaultCapabilityGatesHarnessConfig,
   defaultHarnessThresholdsConfig,
   createVelocityLevelCalculator,
   defaultVelocityThresholdsConfig,
@@ -35,12 +41,11 @@ import {
   IAxisSignalDetector,
   IDeveloperProfileRepository,
   SizeProfile,
-  HarnessProfile,
   InterventionProfile,
-  ParallelismProfile,
   VelocityProfile,
   VelocityImprovementOpportunityDetector,
   IAxisReadinessChecker,
+  IParallelismScoringStrategy,
 } from '@laivel-up/core';
 import { DI } from './di';
 import type { EvaluationConfig } from '../types/evaluation-config';
@@ -127,6 +132,14 @@ container.bind(DI.IMPROVEMENT_OPPORTUNITY_SERVICE).toFactory((resolve: ResolveFu
 
 const g = <T>(token: symbol): T => container.get<T>(token);
 
+function createParallelismScoringStrategy(config: EvaluationConfig): IParallelismScoringStrategy {
+  if (config.algorithms.parallelism === 'median-only') {
+    return new MedianOnlyParallelismScoringStrategy(config.parallelismWeights.median);
+  }
+
+  return new WeightedParallelismScoringStrategy(config.parallelismWeights);
+}
+
 export function buildEvaluateUseCase(config: EvaluationConfig): EvaluateDeveloperProfileUseCase {
   const harnessConfig = {
     ...defaultHarnessThresholdsConfig,
@@ -137,27 +150,69 @@ export function buildEvaluateUseCase(config: EvaluationConfig): EvaluateDevelope
     ...defaultParallelismThresholdsConfig,
     weights: config.parallelismWeights,
   };
+  const sizeCalculator = g<ISizeLevelCalculator>(DI.SIZE_LEVEL_CALCULATOR);
+  const harnessCalculator =
+    config.algorithms.harness === 'capability-gates'
+      ? createCapabilityGatesHarnessLevelCalculator(defaultCapabilityGatesHarnessConfig)
+      : createHarnessLevelCalculator(harnessConfig);
+  const harnessSignalDetector =
+    config.algorithms.harness === 'capability-gates'
+      ? createCapabilityGatesHarnessSignalDetector(
+          defaultCapabilityGatesHarnessConfig,
+          harnessCalculator,
+        )
+      : createHarnessSignalDetector(harnessConfig);
+  const interventionCalculator = g<IInterventionLevelCalculator>(DI.INTERVENTION_LEVEL_CALCULATOR);
+  const velocityCalculator = g<IVelocityLevelCalculator>(DI.VELOCITY_LEVEL_CALCULATOR);
+  const parallelismScoringStrategy = createParallelismScoringStrategy(config);
+  const parallelismCalculator = createParallelismLevelCalculator(
+    parallelismScoringStrategy,
+    parallelismConfig,
+  );
+  const parallelismSignalDetector = createParallelismSignalDetector(
+    parallelismConfig,
+    parallelismScoringStrategy,
+  );
+  const improvementOpportunityService = new ImprovementOpportunityService(
+    harnessCalculator,
+    sizeCalculator,
+    interventionCalculator,
+    parallelismCalculator,
+    new SizeImprovementOpportunityDetector(sizeCalculator, defaultSizeThresholdsConfig),
+    new InterventionImprovementOpportunityDetector(
+      interventionCalculator,
+      defaultInterventionThresholdsConfig,
+    ),
+    new ParallelismImprovementOpportunityDetector(
+      parallelismCalculator,
+      parallelismConfig,
+      parallelismScoringStrategy,
+    ),
+    new VelocityImprovementOpportunityDetector(velocityCalculator, defaultVelocityThresholdsConfig),
+    velocityCalculator,
+    new VelocityReadinessChecker(),
+  );
 
   return new EvaluateDeveloperProfileUseCase(
     g<IDeveloperProfileRepository>(DI.DEVELOPER_PROFILE_REPOSITORY),
     new AiddReferentialLevelCalculatorService(
-      g<ISizeLevelCalculator>(DI.SIZE_LEVEL_CALCULATOR),
-      createHarnessLevelCalculator(harnessConfig),
-      g<IInterventionLevelCalculator>(DI.INTERVENTION_LEVEL_CALCULATOR),
-      createWeightedParallelismLevelCalculator(parallelismConfig),
-      g<IVelocityLevelCalculator>(DI.VELOCITY_LEVEL_CALCULATOR),
+      sizeCalculator,
+      harnessCalculator,
+      interventionCalculator,
+      parallelismCalculator,
+      velocityCalculator,
       new VelocityReadinessChecker(),
       { nonBlockingAxes: config.nonBlockingAxes },
     ),
     g<ImprovementCollector>(DI.IMPROVEMENT_COLLECTOR),
     g<IAxisSignalDetector<SizeProfile>>(DI.SIZE_SIGNAL_DETECTOR),
-    g<IAxisSignalDetector<HarnessProfile>>(DI.HARNESS_SIGNAL_DETECTOR),
+    harnessSignalDetector,
     g<IAxisSignalDetector<InterventionProfile>>(DI.INTERVENTION_SIGNAL_DETECTOR),
-    g<IAxisSignalDetector<ParallelismProfile>>(DI.PARALLELISM_SIGNAL_DETECTOR),
+    parallelismSignalDetector,
     g<IAxisSignalDetector<VelocityProfile>>(DI.VELOCITY_SIGNAL_DETECTOR),
     new VelocityReadinessChecker() as IAxisReadinessChecker<VelocityProfile>,
     g<AxisImprovementService>(DI.AXIS_IMPROVEMENT_SERVICE),
-    g<ImprovementOpportunityService>(DI.IMPROVEMENT_OPPORTUNITY_SERVICE),
+    improvementOpportunityService,
   );
 }
 

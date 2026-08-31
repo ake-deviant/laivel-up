@@ -1,7 +1,11 @@
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
 import { ParallelismProfile } from '../../../domain/entities/parallelism-profile';
 import { ParallelismImprovementOpportunityDetector } from '../../../domain/services/parallelism-improvement-opportunity-detector';
-import { createWeightedParallelismLevelCalculator } from '../../../domain/services/parallelism-level-calculator.service';
+import {
+  createParallelismLevelCalculator,
+  createWeightedParallelismLevelCalculator,
+  MedianOnlyParallelismScoringStrategy,
+} from '../../../domain/services/parallelism-level-calculator.service';
 import { defaultParallelismThresholdsConfig } from '../../../domain/services/parallelism-thresholds.config';
 
 const toParallelism = (overrides: Partial<ParallelismProfile> = {}): ParallelismProfile => ({
@@ -148,5 +152,34 @@ describe('ParallelismImprovementOpportunityDetector', () => {
       // assert
       expect(opportunities.find((o) => o.field === 'hasWorktreeInclude')).toBeUndefined();
     });
+  });
+});
+
+describe('ParallelismImprovementOpportunityDetector with median-only strategy', () => {
+  it('when only maximum reaches gold score — does not surface worktree', () => {
+    // arrange
+    const strategy = new MedianOnlyParallelismScoringStrategy(
+      defaultParallelismThresholdsConfig.weights.median,
+    );
+    const calculator = createParallelismLevelCalculator(
+      strategy,
+      defaultParallelismThresholdsConfig,
+    );
+    const detector = new ParallelismImprovementOpportunityDetector(
+      calculator,
+      defaultParallelismThresholdsConfig,
+      strategy,
+    );
+    const profile = toParallelism({
+      medianConcurrentBranches: 1,
+      maxConcurrentBranches: 100,
+      hasWorktreeInclude: false,
+    });
+
+    // act
+    const opportunities = detector.detect(profile);
+
+    // assert
+    expect(opportunities.find((item) => item.field === 'hasWorktreeInclude')).toBeUndefined();
   });
 });

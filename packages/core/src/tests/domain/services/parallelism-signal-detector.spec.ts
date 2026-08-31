@@ -1,6 +1,7 @@
 import { AiddLevelValue } from '../../../domain/entities/aidd-level-value';
 import { ParallelismProfile } from '../../../domain/entities/parallelism-profile';
 import { createParallelismSignalDetector } from '../../../domain/services/parallelism-signal-detector';
+import { MedianOnlyParallelismScoringStrategy } from '../../../domain/services/parallelism-level-calculator.service';
 import { parallelismThresholdsConfigFixture } from '../../fixtures/parallelism-thresholds-config.fixture';
 
 const cfg = parallelismThresholdsConfigFixture;
@@ -156,5 +157,28 @@ describe('Parallelism signal detector', () => {
       expect(matrix.nextLevel).toBe(AiddLevelValue.copper);
       expect(matrix.signals[0].validated).toBe(false); // 15 < 20
     });
+  });
+});
+
+describe('Parallelism signal detector with median-only strategy', () => {
+  it('when maximum is present — reports only median as a scoring signal', () => {
+    // arrange
+    const detector = createParallelismSignalDetector(
+      cfg,
+      new MedianOnlyParallelismScoringStrategy(cfg.weights.median),
+    );
+
+    // act
+    const matrix = detector.detect(toProfile(2, 100, false));
+
+    // assert
+    expect(matrix.currentLevel).toBe(AiddLevelValue.blue);
+    expect(matrix.signals).toEqual([
+      {
+        name: 'medianConcurrentBranches',
+        validated: false,
+        value: 2,
+      },
+    ]);
   });
 });

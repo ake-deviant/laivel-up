@@ -44,14 +44,29 @@ export { defaultSizeThresholdsConfig } from './domain/services/size-thresholds.c
 export { createInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
 export type { IInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
 export { defaultInterventionThresholdsConfig } from './domain/services/intervention-thresholds.config';
-export { createWeightedParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
-export type { IParallelismLevelCalculator } from './domain/services/parallelism-level-calculator.service';
+export {
+  createParallelismLevelCalculator,
+  createWeightedParallelismLevelCalculator,
+  WeightedParallelismScoringStrategy,
+  MedianOnlyParallelismScoringStrategy,
+} from './domain/services/parallelism-level-calculator.service';
+export type {
+  IParallelismLevelCalculator,
+  IParallelismScoringStrategy,
+} from './domain/services/parallelism-level-calculator.service';
 export { defaultParallelismThresholdsConfig } from './domain/services/parallelism-thresholds.config';
 export { createHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
 export type { IHarnessLevelCalculator } from './domain/services/harness-level-calculator.service';
 export { defaultHarnessThresholdsConfig } from './domain/services/harness-thresholds.config';
+export {
+  CapabilityGatesHarnessLevelCalculator,
+  createCapabilityGatesHarnessLevelCalculator,
+  defaultCapabilityGatesHarnessConfig,
+} from './domain/services/capability-gates-harness-level-calculator.service';
+export type { CapabilityGatesHarnessConfig } from './domain/services/capability-gates-harness-level-calculator.service';
 export { createSizeSignalDetector } from './domain/services/size-signal-detector';
 export { createHarnessSignalDetector } from './domain/services/harness-signal-detector';
+export { createCapabilityGatesHarnessSignalDetector } from './domain/services/capability-gates-harness-signal-detector';
 export { createInterventionSignalDetector } from './domain/services/intervention-signal-detector';
 export { createParallelismSignalDetector } from './domain/services/parallelism-signal-detector';
 export { createVelocitySignalDetector } from './domain/services/velocity-signal-detector';

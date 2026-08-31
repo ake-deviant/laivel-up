@@ -1,7 +1,7 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { VelocityProfile } from '../entities/velocity-profile';
 import { IAxisImprovementOpportunityDetector } from '../ports/improvement-opportunity-service.port';
-import { ImprovementOpportunity } from './improvement-opportunity.service';
+import { PartialOpportunity } from './improvement-opportunity.service';
 import {
   IVelocityLevelCalculator,
   VelocityThresholdsConfig,
@@ -31,7 +31,7 @@ export class VelocityImprovementOpportunityDetector implements IAxisImprovementO
     private readonly thresholds: VelocityThresholdsConfig,
   ) {}
 
-  detect(profile: VelocityProfile): ImprovementOpportunity[] {
+  detect(profile: VelocityProfile): PartialOpportunity[] {
     const { storyPointsPerSprint: sp, teamAvgStoryPointsPerSprint: avg } = profile;
     if (sp === null || avg === null) return [];
 

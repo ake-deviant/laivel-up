@@ -6,6 +6,7 @@ export interface IParallelismLevelCalculator {
 }
 
 export interface IParallelismScoringStrategy {
+  readonly signals: ReadonlyArray<'medianConcurrentBranches' | 'maxConcurrentBranches'>;
   score(profile: ParallelismProfile): number;
 }
 
@@ -32,12 +33,24 @@ export interface ParallelismThresholdsConfig {
 }
 
 export class WeightedParallelismScoringStrategy implements IParallelismScoringStrategy {
+  readonly signals = ['medianConcurrentBranches', 'maxConcurrentBranches'] as const;
+
   constructor(private readonly weights: { median: number; max: number }) {}
 
   score(profile: ParallelismProfile): number {
     const median = profile.medianConcurrentBranches ?? 0;
     const max = profile.maxConcurrentBranches ?? 0;
     return median * this.weights.median + max * this.weights.max;
+  }
+}
+
+export class MedianOnlyParallelismScoringStrategy implements IParallelismScoringStrategy {
+  readonly signals = ['medianConcurrentBranches'] as const;
+
+  constructor(private readonly medianWeight: number) {}
+
+  score(profile: ParallelismProfile): number {
+    return (profile.medianConcurrentBranches ?? 0) * this.medianWeight;
   }
 }
 
@@ -75,6 +88,13 @@ export function createWeightedParallelismLevelCalculator(
   config: ParallelismThresholdsConfig,
 ): IParallelismLevelCalculator {
   const strategy = new WeightedParallelismScoringStrategy(config.weights);
+  return createParallelismLevelCalculator(strategy, config);
+}
+
+export function createParallelismLevelCalculator(
+  strategy: IParallelismScoringStrategy,
+  config: ParallelismThresholdsConfig,
+): IParallelismLevelCalculator {
   const thresholds: IParallelismLevelThreshold[] = [
     new ConfigurableParallelismLevelThreshold(AiddLevelValue.gold, config.levels.gold),
     new ConfigurableParallelismLevelThreshold(AiddLevelValue.silver, config.levels.silver),

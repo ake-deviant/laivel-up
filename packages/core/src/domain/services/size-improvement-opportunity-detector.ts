@@ -2,7 +2,7 @@ import { AiddLevelValue } from '../entities/aidd-level-value';
 import { SizeDistribution } from '../entities/size-distribution';
 import { SizeProfile } from '../entities/size-profile';
 import { IAxisImprovementOpportunityDetector } from '../ports/improvement-opportunity-service.port';
-import { ImprovementOpportunity } from './improvement-opportunity.service';
+import { PartialOpportunity } from './improvement-opportunity.service';
 import { ISizeLevelCalculator, SizeThresholdsConfig } from './size-level-calculator.service';
 
 const LEVEL_RANK: Record<AiddLevelValue, number> = {
@@ -29,7 +29,7 @@ export class SizeImprovementOpportunityDetector implements IAxisImprovementOppor
     private readonly thresholds: SizeThresholdsConfig,
   ) {}
 
-  detect(profile: SizeProfile): ImprovementOpportunity[] {
+  detect(profile: SizeProfile): PartialOpportunity[] {
     const { distribution } = profile;
     if (!distribution) return [];
 
