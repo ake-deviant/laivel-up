@@ -39,7 +39,7 @@ const LEVEL_RANK: Record<AiddLevelValue, number> = {
   gold: 6,
 };
 
-type PartialOpportunity = Omit<
+export type PartialOpportunity = Omit<
   ImprovementOpportunity,
   'overallResultingLevel' | 'overallLevelGain'
 >;

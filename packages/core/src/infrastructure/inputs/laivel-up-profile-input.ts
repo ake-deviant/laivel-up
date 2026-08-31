@@ -4,6 +4,7 @@ import { laivelUpGitActivityInputSchema } from './laivel-up-git-activity-input';
 import { laivelUpPullRequestInputSchema } from './laivel-up-pull-request-input';
 import { laivelUpSonarMeasuresInputSchema } from './laivel-up-sonar-measures-input';
 import { laivelUpSprintMetricsInputSchema } from './laivel-up-sprint-metrics-input';
+import { laivelUpDeliveryConfidenceInputSchema } from './laivel-up-delivery-confidence-input';
 
 export const laivelUpProfileInputSchema = z.object({
   profile_id: z.string(),
@@ -20,6 +21,7 @@ export const laivelUpProfileInputSchema = z.object({
   declaratif: z.string().nullable().optional(),
   session: z.string().nullable().optional(),
   sprintMetrics: laivelUpSprintMetricsInputSchema.nullable().optional(),
+  deliveryConfidence: laivelUpDeliveryConfidenceInputSchema.nullable().optional(),
 });
 
 export type LaivelUpProfileInput = z.infer<typeof laivelUpProfileInputSchema>;

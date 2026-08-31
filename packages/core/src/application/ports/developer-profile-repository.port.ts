@@ -1,4 +1,5 @@
 import { DeveloperProfile } from '../../domain/entities/developer-profile';
+import { DeveloperProfileSummary } from '../../domain/entities/developer-profile-summary';
 import { ParseError } from '../../domain/errors/parse.error';
 import { FormatWarning } from '../../domain/shared/format-warning';
 import { Result } from '../../domain/shared/result';
@@ -10,4 +11,5 @@ export interface DeveloperProfileRepositoryResult {
 
 export interface IDeveloperProfileRepository {
   findById(profileId: string): Result<DeveloperProfileRepositoryResult, ParseError>;
+  findAll(): DeveloperProfileSummary[];
 }

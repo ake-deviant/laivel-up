@@ -1,11 +1,13 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { ParallelismProfile } from '../entities/parallelism-profile';
+import { InvalidParallelismThresholdsError } from '../errors/invalid-parallelism-thresholds.error';
 
 export interface IParallelismLevelCalculator {
   calculate(profile: ParallelismProfile): AiddLevelValue;
 }
 
 export interface IParallelismScoringStrategy {
+  readonly signals: ReadonlyArray<'medianConcurrentBranches' | 'maxConcurrentBranches'>;
   score(profile: ParallelismProfile): number;
 }
 
@@ -31,13 +33,48 @@ export interface ParallelismThresholdsConfig {
   };
 }
 
+const PARALLELISM_LEVEL_ORDER = ['red', 'blue', 'green', 'copper', 'silver', 'gold'] as const;
+
+export function validateParallelismThresholds(config: ParallelismThresholdsConfig): void {
+  for (const level of PARALLELISM_LEVEL_ORDER) {
+    const score = config.levels[level].minScore;
+    if (!Number.isFinite(score) || score < 0) {
+      throw new InvalidParallelismThresholdsError(
+        `${level} minScore must be a finite non-negative number`,
+      );
+    }
+  }
+
+  for (let index = 1; index < PARALLELISM_LEVEL_ORDER.length; index += 1) {
+    const previous = PARALLELISM_LEVEL_ORDER[index - 1];
+    const current = PARALLELISM_LEVEL_ORDER[index];
+    if (config.levels[current].minScore <= config.levels[previous].minScore) {
+      throw new InvalidParallelismThresholdsError(
+        `${current} minScore must be greater than ${previous} minScore`,
+      );
+    }
+  }
+}
+
 export class WeightedParallelismScoringStrategy implements IParallelismScoringStrategy {
+  readonly signals = ['medianConcurrentBranches', 'maxConcurrentBranches'] as const;
+
   constructor(private readonly weights: { median: number; max: number }) {}
 
   score(profile: ParallelismProfile): number {
     const median = profile.medianConcurrentBranches ?? 0;
     const max = profile.maxConcurrentBranches ?? 0;
     return median * this.weights.median + max * this.weights.max;
+  }
+}
+
+export class MedianOnlyParallelismScoringStrategy implements IParallelismScoringStrategy {
+  readonly signals = ['medianConcurrentBranches'] as const;
+
+  constructor(private readonly medianWeight: number) {}
+
+  score(profile: ParallelismProfile): number {
+    return (profile.medianConcurrentBranches ?? 0) * this.medianWeight;
   }
 }
 
@@ -75,6 +112,14 @@ export function createWeightedParallelismLevelCalculator(
   config: ParallelismThresholdsConfig,
 ): IParallelismLevelCalculator {
   const strategy = new WeightedParallelismScoringStrategy(config.weights);
+  return createParallelismLevelCalculator(strategy, config);
+}
+
+export function createParallelismLevelCalculator(
+  strategy: IParallelismScoringStrategy,
+  config: ParallelismThresholdsConfig,
+): IParallelismLevelCalculator {
+  validateParallelismThresholds(config);
   const thresholds: IParallelismLevelThreshold[] = [
     new ConfigurableParallelismLevelThreshold(AiddLevelValue.gold, config.levels.gold),
     new ConfigurableParallelismLevelThreshold(AiddLevelValue.silver, config.levels.silver),

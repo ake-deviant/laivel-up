@@ -15,6 +15,11 @@ import { DomainError } from '../../../domain/errors/domain.error';
 import { DeveloperProfileTriageService } from '../../../domain/services/developer-profile-triage.service';
 import { Result, ok, err } from '../../../domain/shared/result';
 import { ImprovementOpportunityService } from '../../../domain/services/improvement-opportunity.service';
+import { DeliveryConfidenceProfile } from '../../../domain/entities/delivery-confidence-profile';
+import { createDeliveryConfidenceLevelCalculator } from '../../../domain/services/delivery-confidence-level-calculator.service';
+import { defaultDeliveryConfidenceConfig } from '../../../domain/services/delivery-confidence.config';
+import { DeliveryConfidenceReadinessChecker } from '../../../domain/services/delivery-confidence-readiness-checker';
+import { createDeliveryConfidenceSignalDetector } from '../../../domain/services/delivery-confidence-signal-detector';
 
 export class EvaluateDeveloperProfileUseCase {
   private readonly triage = new DeveloperProfileTriageService();
@@ -31,6 +36,11 @@ export class EvaluateDeveloperProfileUseCase {
     private readonly velocityReadinessChecker: IAxisReadinessChecker<VelocityProfile>,
     private readonly improvementService: AxisImprovementService,
     private readonly opportunityService?: ImprovementOpportunityService,
+    private readonly deliveryConfidenceDetector: IAxisSignalDetector<DeliveryConfidenceProfile> = createDeliveryConfidenceSignalDetector(
+      createDeliveryConfidenceLevelCalculator(defaultDeliveryConfidenceConfig),
+      defaultDeliveryConfidenceConfig,
+    ),
+    private readonly deliveryConfidenceReadinessChecker: IAxisReadinessChecker<DeliveryConfidenceProfile> = new DeliveryConfidenceReadinessChecker(),
   ) {}
 
   execute(profileId: string): Result<DeveloperProfileResult, DomainError> {
@@ -46,6 +56,9 @@ export class EvaluateDeveloperProfileUseCase {
     const evaluated = this.evaluator.evaluate(profile);
 
     const velocityReadiness = this.velocityReadinessChecker.check(profile.velocity);
+    const deliveryConfidenceReadiness = this.deliveryConfidenceReadinessChecker.check(
+      profile.deliveryConfidence,
+    );
 
     const signalMatrices = [
       this.sizeDetector.detect(profile.size),
@@ -53,6 +66,9 @@ export class EvaluateDeveloperProfileUseCase {
       this.interventionDetector.detect(profile.intervention),
       this.parallelismDetector.detect(profile.parallelism),
       ...(velocityReadiness.calculable ? [this.velocityDetector.detect(profile.velocity)] : []),
+      ...(deliveryConfidenceReadiness.calculable
+        ? [this.deliveryConfidenceDetector.detect(profile.deliveryConfidence)]
+        : []),
     ];
 
     const improvements = this.improvementService.derive(signalMatrices);

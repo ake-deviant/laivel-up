@@ -1,7 +1,7 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { InterventionProfile } from '../entities/intervention-profile';
 import { IAxisImprovementOpportunityDetector } from '../ports/improvement-opportunity-service.port';
-import { ImprovementOpportunity } from './improvement-opportunity.service';
+import { PartialOpportunity } from './improvement-opportunity.service';
 import {
   IInterventionLevelCalculator,
   InterventionThresholdsConfig,
@@ -31,7 +31,7 @@ export class InterventionImprovementOpportunityDetector implements IAxisImprovem
     private readonly thresholds: InterventionThresholdsConfig,
   ) {}
 
-  detect(profile: InterventionProfile): ImprovementOpportunity[] {
+  detect(profile: InterventionProfile): PartialOpportunity[] {
     const currentLevel = this.calculator.calculate(profile);
 
     return this.buildCandidates()

@@ -1,6 +1,7 @@
 import { DeveloperProfileResultPresenter } from '../../presentation/developer-profile-result.presenter';
 import { DeveloperProfileResult } from '../../domain/entities/developer-profile-result';
 import { AiddLevelValue } from '../../domain/entities/aidd-level-value';
+import { createEmptyDeliveryConfidenceProfile } from '../../domain/entities/delivery-confidence-profile';
 
 const makeResult = (overrides: Partial<DeveloperProfileResult> = {}): DeveloperProfileResult => ({
   overallLevel: AiddLevelValue.gold,
@@ -9,7 +10,13 @@ const makeResult = (overrides: Partial<DeveloperProfileResult> = {}): DeveloperP
   interventionLevel: AiddLevelValue.copper,
   parallelismLevel: AiddLevelValue.gold,
   velocityLevel: AiddLevelValue.white,
+  deliveryConfidenceLevel: AiddLevelValue.white,
   velocityReadiness: { calculable: false, missingEssential: ['sprintCount'], missingImpacting: [] },
+  deliveryConfidenceReadiness: {
+    calculable: false,
+    missingEssential: ['context.activeDays'],
+    missingImpacting: [],
+  },
   axisProfiles: {
     size: {
       distribution: { xs: 0.1, s: 0.2, m: 0.3, l: 0.25, xl: 0.15 },
@@ -60,6 +67,7 @@ const makeResult = (overrides: Partial<DeveloperProfileResult> = {}): DeveloperP
       featuresPerSprint: null,
       bugsPerSprint: null,
     },
+    deliveryConfidence: createEmptyDeliveryConfidenceProfile(),
   },
   signalMatrices: [],
   improvements: [],
@@ -82,7 +90,7 @@ describe('DeveloperProfileResult presenter', () => {
     expect(vm.overallLevel).toEqual({ value: 'silver', label: 'Silver', rank: 5 });
   });
 
-  it('when presenting a result — produces 5 axes in order: size, harness, intervention, parallelism, velocity', () => {
+  it('when presenting a result — produces 6 axes in order', () => {
     // arrange
     const result = makeResult();
 
@@ -96,6 +104,7 @@ describe('DeveloperProfileResult presenter', () => {
       'intervention',
       'parallelism',
       'velocity',
+      'deliveryConfidence',
     ]);
   });
 
@@ -113,6 +122,7 @@ describe('DeveloperProfileResult presenter', () => {
       'Intervention',
       'Parallèle',
       'Vélocité',
+      'Confiance de livraison',
     ]);
   });
 
@@ -197,7 +207,7 @@ describe('DeveloperProfileResult presenter', () => {
     const vm = DeveloperProfileResultPresenter.present(makeResult());
 
     expect(vm.axes.map((axis) => axis.fieldGroups.flatMap((group) => group.fields).length)).toEqual(
-      [7, 15, 6, 3, 8],
+      [7, 15, 6, 3, 8, 74],
     );
     expect(vm.axes[0].fieldGroups[0]).toEqual({
       name: 'distribution',

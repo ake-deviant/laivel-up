@@ -1,0 +1,65 @@
+{
+  "context": {
+    "periodStart": "2026-05-01",
+    "periodEnd": "2026-07-31",
+    "activeDays": 58,
+    "expectedRole": "developer",
+    "productCriticality": "high",
+    "codebaseMaturity": "established",
+    "teamStability": 0.9,
+    "supportWorkRatio": 0.1,
+    "incidentWorkRatio": 0.05,
+    "availableSources": ["product-outcomes", "delivery-flow", "deployments"]
+  },
+  "businessImpact": {
+    "featuresCompletedCount": 8,
+    "featuresAdoptedRatio": 0.82,
+    "businessOutcomeAchievementRatio": 0.78,
+    "abandonedWorkRatio": 0.04,
+    "reworkRatio": 0.08,
+    "timeToFirstValueDays": 4
+  },
+  "deliveryReliability": {
+    "commitmentCompletionRatio": 0.9,
+    "deliveryForecastAccuracy": 0.85,
+    "scopeChangeAbsorptionRatio": 0.8,
+    "blockedTimeRatio": 0.06,
+    "dependencyWaitingTimeDays": 1,
+    "medianCycleTimeDays": 4,
+    "completionRate": 0.91
+  },
+  "qualityAndRisk": {
+    "changeFailureRate": 0.03,
+    "securityIssueIntroductionRate": 0,
+    "observabilityCoverageRatio": 0.9,
+    "rollbackPreparedRatio": 0.9
+  },
+  "autonomy": {
+    "independentDeliveryRatio": 0.86,
+    "clarificationRequestQuality": 0.85,
+    "escalationRelevanceRatio": 0.9,
+    "decisionReversalRate": 0.04,
+    "medianCorrectionCommitsAfterOpen": 1,
+    "mergedWithoutHumanEditRatio": 0.75
+  },
+  "collectiveImpact": {
+    "reviewHelpfulnessScore": 0.75,
+    "handoverSuccessRatio": 0.85,
+    "codeOwnershipConcentration": 0.2
+  },
+  "complexity": {
+    "problemAmbiguityScore": 0.65,
+    "domainComplexityScore": 0.6,
+    "technicalComplexityScore": 0.7,
+    "dependencyComplexityScore": 0.55
+  },
+  "aiEffectiveness": {
+    "aiGeneratedChangeAcceptanceRatio": 0.8,
+    "aiRelatedDefectRate": 0.03,
+    "aiVerificationCoverageRatio": 0.92,
+    "aiCostPerDeliveredOutcome": 5,
+    "aiContextReuseRatio": 0.8,
+    "parallelWorkCompletionRatio": 0.85,
+    "hasWorktreeInclude": true
+  }
+}

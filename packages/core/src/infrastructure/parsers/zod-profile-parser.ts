@@ -10,6 +10,7 @@ import { laivelUpProfileInputSchema } from '../inputs/laivel-up-profile-input';
 import { laivelUpPullRequestInputSchema } from '../inputs/laivel-up-pull-request-input';
 import { laivelUpSonarMeasuresInputSchema } from '../inputs/laivel-up-sonar-measures-input';
 import { laivelUpSprintMetricsInputSchema } from '../inputs/laivel-up-sprint-metrics-input';
+import { laivelUpDeliveryConfidenceInputSchema } from '../inputs/laivel-up-delivery-confidence-input';
 
 const BLOCKING_FIELDS = new Set(['profile_id', 'available']);
 
@@ -28,6 +29,7 @@ const permissiveSchema = z.object({
   aiContext: laivelUpAiContextInputSchema.nullable().optional().catch(null),
   declaratif: z.string().nullable().optional().catch(null),
   session: z.string().nullable().optional().catch(null),
+  deliveryConfidence: laivelUpDeliveryConfidenceInputSchema.nullable().optional().catch(null),
 });
 
 export class ZodProfileParser implements IProfileParser {

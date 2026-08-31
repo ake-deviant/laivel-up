@@ -3,14 +3,36 @@ import * as path from 'path';
 import { IDeveloperProfileRepository } from '../../application/ports/developer-profile-repository.port';
 import { IProfileParser } from '../../application/ports/profile-parser.port';
 import { DeveloperProfileRepositoryResult } from '../../application/ports/developer-profile-repository.port';
+import { DeveloperProfileSummary } from '../../domain/entities/developer-profile-summary';
 import { ParseError } from '../../domain/errors/parse.error';
 import { Result, ok } from '../../domain/shared/result';
+import { laivelUpProfileSummaryInputSchema } from '../inputs/laivel-up-profile-summary-input';
+import { DeveloperProfileSummaryMapper } from '../mappers/developer-profile-summary-mapper';
 
 export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepository {
   constructor(
     private readonly parser: IProfileParser,
     private readonly baseDir: string,
   ) {}
+
+  findAll(): DeveloperProfileSummary[] {
+    if (!fs.existsSync(this.baseDir)) return [];
+    return fs
+      .readdirSync(this.baseDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .flatMap((entry) => {
+        try {
+          const raw = JSON.parse(
+            fs.readFileSync(path.join(this.baseDir, entry.name, 'profile.json'), 'utf-8'),
+          );
+          const result = laivelUpProfileSummaryInputSchema.safeParse(raw);
+          if (!result.success) return [];
+          return [DeveloperProfileSummaryMapper.toDomain(result.data)];
+        } catch {
+          return [];
+        }
+      });
+  }
 
   findById(profileId: string): Result<DeveloperProfileRepositoryResult, ParseError> {
     const raw = this.readRaw(path.join(this.baseDir, profileId));
@@ -28,9 +50,13 @@ export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepo
     const sprintMetricsPath = this.findFile(dirPath, 'sprint-metrics.json');
     const declaratifPath = this.findFile(dirPath, 'declaratif.md');
     const sessionPath = this.findFile(dirPath, 'session.md');
+    const deliveryConfidencePath = this.findFile(dirPath, 'delivery-confidence.json');
 
     return {
       ...profileJson,
+      available: deliveryConfidencePath
+        ? [...new Set([...(profileJson.available ?? []), 'delivery-confidence.json'])]
+        : profileJson.available,
       gitActivity: gitActivityPath ? JSON.parse(fs.readFileSync(gitActivityPath, 'utf-8')) : null,
       pullRequests: pullRequestsPath
         ? JSON.parse(fs.readFileSync(pullRequestsPath, 'utf-8'))
@@ -42,6 +68,9 @@ export class LaivelUpDeveloperProfileRepository implements IDeveloperProfileRepo
       aiContext: this.resolveAiContext(path.join(dirPath, 'repo-context')),
       declaratif: declaratifPath ? fs.readFileSync(declaratifPath, 'utf-8') : null,
       session: sessionPath ? fs.readFileSync(sessionPath, 'utf-8') : null,
+      deliveryConfidence: deliveryConfidencePath
+        ? JSON.parse(fs.readFileSync(deliveryConfidencePath, 'utf-8'))
+        : null,
     };
   }
 

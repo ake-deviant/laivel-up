@@ -1,6 +1,10 @@
 # Laivel Up
 
-Outil d'évaluation du niveau AI-Driven Development d'un développeur selon un référentiel à 7 niveaux et 4 axes.
+Framework d'évaluation du niveau AI-Driven Development. Il pose un cadre modulaire : des axes, des algorithmes, des seuils — chaque couche est remplaçable sans toucher aux autres. Plusieurs équipes peuvent faire tourner la même instance avec des critères entièrement différents.
+
+Le scoring est déterministe. Aucun LLM n'intervient dans le calcul. Le verdict est reproductible à données égales.
+
+→ [Méthodologie](methodologie.md) · [Référence technique](reference.md)
 
 ## Les niveaux
 
@@ -14,7 +18,45 @@ Outil d'évaluation du niveau AI-Driven Development d'un développeur selon un r
 | 🥈 Silver | L-XL | + loops | jamais (post-cadrage) | 3 |
 | 🥇 Gold | L-XL | + loops | jamais (cadrage compris) | 3 |
 
-> Un niveau n'est atteint que si **tous ses axes** le sont.
+> Un niveau n'est atteint que si **tous ses axes bloquants** le sont.
+
+6 axes sont évalués : Size, Harness, Intervention, Parallelism (référentiel), Velocity et Delivery Confidence (extensions). Les deux extensions sont non-bloquantes par défaut — configurable.
+
+## Démarrage
+
+```bash
+npm install
+
+# Application
+cd packages/app-nextjs && npm run dev
+
+# Tests
+npm test
+```
+
+## Modularité
+
+**Via l'interface — sans toucher au code.**
+Trois axes proposent plusieurs algorithmes sélectionnables depuis la page Config :
+
+| Axe | Algorithmes disponibles |
+|---|---|
+| Size | `dominant-distribution` · `weighted-average` |
+| Harness | `weighted-score` · `capability-gates` |
+| Parallelism | `weighted` · `median-only` |
+
+Les poids, seuils et axes bloquants sont également ajustables depuis l'UI. La configuration est persistée et envoyée à chaque évaluation. Un bouton restaure les valeurs initiales.
+
+**Multi-utilisateurs.** Chaque appel embarque sa propre configuration. Deux jurys utilisant la même instance peuvent appliquer des algorithmes et des seuils différents — rien n'est partagé entre leurs sessions.
+
+**Extensibilité dans le code.** L'architecture sépare strictement chaque axe de ses voisins.
+
+Ajouter un axe = implémenter son calculateur + son détecteur de signaux + son détecteur d'opportunités, puis le déclarer dans le container IoC (`packages/app-nextjs/src/di/`) :
+1. Déclarer un token dans `di.ts`
+2. Binder le service dans `container.ts`
+3. L'injecter dans `AiddReferentialLevelCalculatorService`
+
+Ajouter un algorithme sur un axe existant = brancher une nouvelle implémentation derrière l'interface existante (`IParallelismScoringStrategy`, `ISizeLevelCalculator`, etc.). Retirer un algorithme ne casse aucun consommateur.
 
 ## Architecture
 
@@ -27,16 +69,7 @@ infrastructure/ → parsers, mappers, repositories
 tests/          → fixtures, scénarios, specs
 ```
 
-## Lancer les tests
-
-```bash
-npm install
-npm test
-```
-
-## Axe Taille — calcul du niveau
-
-Le référentiel ne fixe pas les valeurs exactes. Tous les levels sont configurables via `SizeThresholdsConfig` injectée au service.
+## Axe Size — calcul du niveau
 
 Config par défaut : `packages/core/src/domain/services/size-thresholds.config.ts`
 
@@ -50,17 +83,7 @@ Config par défaut : `packages/core/src/domain/services/size-thresholds.config.t
 | silver | minXl / minLXl | 20% / 60% |
 | gold | minXl / minLXl | 40% / 60% |
 
-```typescript
-new SizeLevelCalculatorService({
-  white:  { minXs: 0 },
-  red:    { minS: 0.5 },
-  blue:   { minM: 0.5 },
-  green:  { minL: 0.5 },
-  copper: { minXl: 0.2, minLXl: 0.5 },
-  silver: { minXl: 0.2, minLXl: 0.6 },
-  gold:   { minXl: 0.4, minLXl: 0.6 },
-});
-```
+Algorithme alternatif `weighted-average` : `XS×0 + S×1 + M×2 + L×3 + XL×4`, avec seuils configurables par level.
 
 ## Axe Harness — calcul du niveau
 
@@ -69,44 +92,33 @@ Config par défaut : `packages/core/src/domain/services/harness-thresholds.confi
 | Level | Condition | Valeur |
 |---|---|---|
 | white | aucun signal IA détecté | — |
-| red | ratio de commits IA, sans fichier de contexte | > 0 |
+| red | ratio commits IA, sans fichier de contexte | > 0 |
 | blue | score context engineering | ≥ 16 |
 | copper | score context engineering **et** score AI configuration | ≥ 16 **et** ≥ 12 |
 | gold | score context engineering **et** score AI configuration **et** runs CI | ≥ 16 **et** ≥ 12 **et** ≤ 1 |
 
-Tous les poids et seuils sont configurables — valeurs par défaut :
+Poids par défaut (context engineering / AI configuration) :
 
-| Catégorie | Signal / Paramètre | Valeur |
-|---|---|---|
-| Fichier unique | CLAUDE.md | 4 pts |
-| Fichier unique | AGENTS.md | 3 pts |
-| Fichier unique | `.claude/settings.json` | 2 pts |
-| Dossier | `.claude/hooks/` | 4 pts/fichier |
-| Dossier | `.claude/rules/` | 4 pts/fichier |
-| Dossier | `aidd_docs/memory/` | 4 pts/fichier |
-| Dossier | `docs/specs/` | 3 pts/fichier |
-| Dossier | `docs/plans/` | 3 pts/fichier |
-| Dossier | `aidd_docs/tasks/` | 3 pts/fichier |
-| Dossier | `.claude/agents/` | 3 pts/fichier |
-| Dossier | `.claude/skills/` | 3 pts/fichier |
-| Dossier | `docs/context/` | 2 pts/fichier |
-| Dossier | `docs/brainstorm/` | 2 pts/fichier |
+| Signal | Pts | Signal | Pts |
+|---|---|---|---|
+| CLAUDE.md | 4 | hooks | 4/fichier |
+| mémoire | 4 | rules | 4/fichier |
+| specs | 3 | AGENTS.md | 3 |
+| plans | 3 | agents | 3/fichier |
+| tasks | 3 | skills | 3/fichier |
+| brainstorm | 2 | settings.json | 2 |
+| context | 2 | | |
 
-## Axe Parallèle — calcul du niveau
+Algorithme alternatif `capability-gates` : chaque level exige une chaîne complète. Un signal absent ne peut pas être compensé par un autre.
 
-Le niveau parallelism est calculé à partir d'un score pondéré sur `medianConcurrentBranches` et `maxConcurrentBranches` — le median reflète l'habitude réelle (poids dominant), le max reflète la capacité maximale atteinte (signal secondaire) — un pic isolé ne fait pas le niveau. Le worktree (`hasWorktreeInclude`) est une condition requise pour atteindre gold, pas une pondération.
+## Axe Parallelism — calcul du niveau
 
-L'algorithme est modulaire à trois niveaux :
+Score pondéré sur `medianConcurrentBranches` (usage habituel) et `maxConcurrentBranches` (signal secondaire). Le worktree (`hasWorktreeInclude`) est un gate requis pour gold, pas une pondération.
 
-- **Config** (`ParallelismThresholdsConfig`) — ajuster les poids et les seuils sans toucher au code
-- **Stratégie** (`IParallelismScoringStrategy`) — remplacer la logique de calcul du score
-- **Calculateur** (`IParallelismLevelCalculator`) — remplacer tout l'algorithme de l'axe parralèle.
-
-Config par défaut (`packages/core/src/domain/services/parallelism-thresholds.config.ts`) :
+Config par défaut : `packages/core/src/domain/services/parallelism-thresholds.config.ts`
 
 | Level | minScore | Condition |
 |---|---|---|
-| white | fallback | — |
 | red | 7 | — |
 | blue | 10 | — |
 | green | 15 | — |
@@ -114,13 +126,15 @@ Config par défaut (`packages/core/src/domain/services/parallelism-thresholds.co
 | silver | 25 | — |
 | gold | 20 | worktree requis |
 
+Poids par défaut : `median × 5 + max × 1`. Algorithme alternatif `median-only` : seule la médiane contribue au score.
+
 ## Axe Intervention — calcul du niveau
 
-L'algorithme évalue des conditions multi-signaux par level, du plus haut au plus bas. Le premier level dont toutes les conditions sont satisfaites est retenu. Une condition non renseignée (`null`) échoue — on ne récompense pas une donnée absente.
+Conditions multi-signaux évaluées du level le plus haut au plus bas. Premier level dont toutes les conditions sont satisfaites.
 
-Config par défaut (`packages/core/src/domain/services/intervention-thresholds.config.ts`) :
+Config par défaut : `packages/core/src/domain/services/intervention-thresholds.config.ts`
 
-| Level | `medianCorrectionCommitsAfterOpen` | `humanCommitRatio` | `mergedWithoutHumanEditRatio` | `medianReviewCommentsReceived` |
+| Level | `medianCorrectionCommits` | `humanCommitRatio` | `mergedWithoutHumanEditRatio` | `medianReviewComments` |
 |---|---|---|---|---|
 | gold | = 0 | = 0 | = 1 | — |
 | silver | = 0 | ≤ 0.15 | ≥ 0.50 | ≤ 2 |
@@ -129,35 +143,21 @@ Config par défaut (`packages/core/src/domain/services/intervention-thresholds.c
 | red | fallback si signal IA présent | | | |
 | white | fallback final | | | |
 
-> **"Plusieurs PR par jour" (condition gold du référentiel) :** non implémenté. Le calcul d'un ratio journalier à partir du total de PR sur la période serait faussé par les périodes d'inactivité (congés, sprint off) — un développeur qui livre 30 PR en une semaine puis s'arrête deux mois aurait une moyenne basse sans que cela reflète son niveau réel. Les données disponibles ne fournissent pas de distribution journalière, rendant cette condition non mesurable de façon fiable.
+> **Green sauté :** green et copper partagent la même description d'intervention. Le plus haut est attribué — les autres axes trancheront le niveau global.
 
-> **Green sauté :** green et copper partagent la même description d'intervention dans le référentiel. Quand deux levels ont une description identique sur un axe, on attribue le plus haut — les autres axes trancheront le niveau global.
+> **"Plusieurs PR par jour" (condition gold du référentiel) :** non implémenté. Les données disponibles ne fournissent pas de distribution journalière fiable.
 
-## Injection de dépendances (IoC)
+## Système d'amélioration
 
-Le container IoC `@evyweb/ioctopus` est configuré dans `packages/app-nextjs/src/di/`. Chaque service est identifié par un token symbol déclaré dans `di.ts`.
-
-Ajouter un nouveau calculateur d'axe = 3 étapes :
-1. Déclarer un token dans `di.ts`
-2. Binder le service dans `container.ts`
-3. L'injecter dans `AiddReferentialLevelCalculatorService`
-
-## Système d'amélioration (ILevelImprovementBus)
-
-Pendant le calcul de chaque axe, des événements sont émis lorsqu'un profil frôle un level sans l'atteindre. Ces événements sont collectés par `ImprovementCollector` et renvoyés dans la réponse sous forme de liste `improvements`.
-
-Ce mécanisme est transverse à tous les axes : chaque calculateur reçoit un bus en injection, et peut émettre ses propres événements sans couplage au use case.
+Pendant le calcul, chaque axe émet des événements quand un profil frôle un level sans l'atteindre. Ces événements sont collectés par `ImprovementCollector` et renvoyés dans la réponse.
 
 ```
 ILevelImprovementBus.emit(event)
   └── ImprovementCollector  →  improvements: Improvement[]  →  DeveloperProfileResult
 ```
 
-### Événements existants
+Le mécanisme est transverse : chaque calculateur reçoit le bus en injection, sans couplage au use case.
 
-| Axe | Type | Déclencheur |
-|---|---|---|
-| parallelism | `worktree_data_missing` | score atteint gold mais `hasWorktreeInclude` est null |
-| parallelism | `worktree_not_configured` | score atteint gold mais `hasWorktreeInclude` est false |
+## License
 
----
+This project is licensed under the MIT License. See [LICENSE](LICENSE).

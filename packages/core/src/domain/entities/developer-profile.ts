@@ -5,6 +5,7 @@ import { ParallelismProfile } from './parallelism-profile';
 import { Profile } from './profile';
 import { SizeProfile } from './size-profile';
 import { VelocityProfile } from './velocity-profile';
+import { DeliveryConfidenceProfile } from './delivery-confidence-profile';
 
 export interface DeveloperProfile {
   id: string;
@@ -15,4 +16,5 @@ export interface DeveloperProfile {
   intervention: InterventionProfile;
   parallelism: ParallelismProfile;
   velocity: VelocityProfile;
+  deliveryConfidence: DeliveryConfidenceProfile;
 }

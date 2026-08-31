@@ -4,8 +4,10 @@ import { Signal } from '../entities/signal';
 import { ParallelismProfile } from '../entities/parallelism-profile';
 import { IAxisSignalDetector } from '../ports/axis-signal-detector.port';
 import {
+  IParallelismScoringStrategy,
   ParallelismThresholdsConfig,
   ParallelismLevelConfig,
+  WeightedParallelismScoringStrategy,
 } from './parallelism-level-calculator.service';
 
 const LEVEL_ORDER: AiddLevelValue[] = [
@@ -17,16 +19,6 @@ const LEVEL_ORDER: AiddLevelValue[] = [
   AiddLevelValue.silver,
   AiddLevelValue.gold,
 ];
-
-function computeScore(
-  profile: ParallelismProfile,
-  weights: { median: number; max: number },
-): number {
-  return (
-    (profile.medianConcurrentBranches ?? 0) * weights.median +
-    (profile.maxConcurrentBranches ?? 0) * weights.max
-  );
-}
 
 function computeCurrentLevel(
   score: number,
@@ -65,20 +57,14 @@ function buildSignals(
   score: number,
   profile: ParallelismProfile,
   nextCfg: ParallelismLevelConfig,
+  scoringStrategy: IParallelismScoringStrategy,
 ): Signal[] {
   const scoreValidated = score >= nextCfg.minScore;
-  const signals: Signal[] = [
-    {
-      name: 'medianConcurrentBranches',
-      validated: scoreValidated,
-      value: profile.medianConcurrentBranches,
-    },
-    {
-      name: 'maxConcurrentBranches',
-      validated: scoreValidated,
-      value: profile.maxConcurrentBranches,
-    },
-  ];
+  const signals: Signal[] = scoringStrategy.signals.map((name) => ({
+    name,
+    validated: scoreValidated,
+    value: profile[name],
+  }));
   if (nextCfg.requiresWorktree) {
     signals.push({
       name: 'hasWorktreeInclude',
@@ -90,10 +76,13 @@ function buildSignals(
 }
 
 class ParallelismSignalDetectorService implements IAxisSignalDetector<ParallelismProfile> {
-  constructor(private readonly config: ParallelismThresholdsConfig) {}
+  constructor(
+    private readonly config: ParallelismThresholdsConfig,
+    private readonly scoringStrategy: IParallelismScoringStrategy,
+  ) {}
 
   detect(profile: ParallelismProfile): AxisSignalMatrix {
-    const score = computeScore(profile, this.config.weights);
+    const score = this.scoringStrategy.score(profile);
     const current = computeCurrentLevel(score, profile, this.config);
     const next = getNextLevel(current);
 
@@ -102,13 +91,16 @@ class ParallelismSignalDetectorService implements IAxisSignalDetector<Parallelis
       axis: 'parallelism',
       currentLevel: current,
       nextLevel: next,
-      signals: targetCfg ? buildSignals(score, profile, targetCfg) : [],
+      signals: targetCfg ? buildSignals(score, profile, targetCfg, this.scoringStrategy) : [],
     };
   }
 }
 
 export function createParallelismSignalDetector(
   config: ParallelismThresholdsConfig,
+  scoringStrategy: IParallelismScoringStrategy = new WeightedParallelismScoringStrategy(
+    config.weights,
+  ),
 ): IAxisSignalDetector<ParallelismProfile> {
-  return new ParallelismSignalDetectorService(config);
+  return new ParallelismSignalDetectorService(config, scoringStrategy);
 }

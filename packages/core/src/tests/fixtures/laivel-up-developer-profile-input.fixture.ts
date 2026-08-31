@@ -62,6 +62,7 @@ function load(name: string): LaivelUpProfileInput {
   const sprintMetricsPath = findFile(profileDir, 'sprint-metrics.json');
   const declaratifPath = findFile(profileDir, 'declaratif.md');
   const sessionPath = findFile(profileDir, 'session.md');
+  const deliveryConfidencePath = findFile(profileDir, 'delivery-confidence.json');
 
   return {
     profile_id: profileJson.profile_id,
@@ -80,6 +81,9 @@ function load(name: string): LaivelUpProfileInput {
     aiContext: resolveAiContext(profileDir),
     declaratif: declaratifPath ? fs.readFileSync(declaratifPath, 'utf-8') : null,
     session: sessionPath ? fs.readFileSync(sessionPath, 'utf-8') : null,
+    deliveryConfidence: deliveryConfidencePath
+      ? JSON.parse(fs.readFileSync(deliveryConfidencePath, 'utf-8'))
+      : null,
   };
 }
 

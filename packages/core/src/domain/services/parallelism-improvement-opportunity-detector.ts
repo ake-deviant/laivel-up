@@ -1,10 +1,12 @@
 import { AiddLevelValue } from '../entities/aidd-level-value';
 import { ParallelismProfile } from '../entities/parallelism-profile';
 import { IAxisImprovementOpportunityDetector } from '../ports/improvement-opportunity-service.port';
-import { ImprovementOpportunity } from './improvement-opportunity.service';
+import { PartialOpportunity } from './improvement-opportunity.service';
 import {
   IParallelismLevelCalculator,
+  IParallelismScoringStrategy,
   ParallelismThresholdsConfig,
+  WeightedParallelismScoringStrategy,
 } from './parallelism-level-calculator.service';
 
 const LEVEL_RANK: Record<AiddLevelValue, number> = {
@@ -29,9 +31,12 @@ export class ParallelismImprovementOpportunityDetector implements IAxisImproveme
   constructor(
     private readonly calculator: IParallelismLevelCalculator,
     private readonly thresholds: ParallelismThresholdsConfig,
+    private readonly scoringStrategy: IParallelismScoringStrategy = new WeightedParallelismScoringStrategy(
+      thresholds.weights,
+    ),
   ) {}
 
-  detect(profile: ParallelismProfile): ImprovementOpportunity[] {
+  detect(profile: ParallelismProfile): PartialOpportunity[] {
     const currentLevel = this.calculator.calculate(profile);
 
     return this.buildCandidates()
@@ -59,7 +64,7 @@ export class ParallelismImprovementOpportunityDetector implements IAxisImproveme
   }
 
   private buildCandidates(): ParallelismFieldDefinition[] {
-    const { weights, levels } = this.thresholds;
+    const { levels } = this.thresholds;
 
     return [
       {
@@ -68,9 +73,7 @@ export class ParallelismImprovementOpportunityDetector implements IAxisImproveme
         effort: 'low',
         isEligible: (p) => {
           if (p.hasWorktreeInclude === true) return false;
-          const score =
-            (p.medianConcurrentBranches ?? 0) * weights.median +
-            (p.maxConcurrentBranches ?? 0) * weights.max;
+          const score = this.scoringStrategy.score(p);
           return score >= levels.gold.minScore;
         },
         simulate: (p) => ({ ...p, hasWorktreeInclude: true }),
@@ -89,23 +92,16 @@ export class ParallelismImprovementOpportunityDetector implements IAxisImproveme
   }
 
   private computeTargetMedian(profile: ParallelismProfile): number {
-    const { weights, levels } = this.thresholds;
-    const maxContrib = (profile.maxConcurrentBranches ?? 0) * weights.max;
     const currentMedian = profile.medianConcurrentBranches ?? 0;
+    const targetLevel =
+      profile.hasWorktreeInclude === true ? AiddLevelValue.gold : AiddLevelValue.silver;
 
-    const levelsDescending = [
-      { config: levels.gold },
-      { config: levels.silver },
-      { config: levels.copper },
-      { config: levels.green },
-      { config: levels.blue },
-      { config: levels.red },
-    ];
-
-    for (const { config } of levelsDescending) {
-      if (config.requiresWorktree && profile.hasWorktreeInclude !== true) continue;
-      const requiredMedian = Math.ceil((config.minScore - maxContrib) / weights.median);
-      if (requiredMedian > currentMedian) return requiredMedian;
+    for (let candidate = currentMedian + 1; candidate <= 1_000; candidate += 1) {
+      const resultingLevel = this.calculator.calculate({
+        ...profile,
+        medianConcurrentBranches: candidate,
+      });
+      if (LEVEL_RANK[resultingLevel] >= LEVEL_RANK[targetLevel]) return candidate;
     }
 
     return currentMedian;
