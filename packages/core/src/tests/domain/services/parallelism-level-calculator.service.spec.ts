@@ -6,6 +6,7 @@ import {
   MedianOnlyParallelismScoringStrategy,
 } from '../../../domain/services/parallelism-level-calculator.service';
 import { parallelismThresholdsConfigFixture } from '../../fixtures/parallelism-thresholds-config.fixture';
+import { InvalidParallelismThresholdsError } from '../../../domain/errors/invalid-parallelism-thresholds.error';
 
 const cfg = parallelismThresholdsConfigFixture;
 
@@ -49,7 +50,7 @@ describe('Parallelism level calculator', () => {
     },
     {
       label: 'score at gold threshold with worktree',
-      profile: toProfile(4, 0, true),
+      profile: toProfile(6, 0, true),
       expected: AiddLevelValue.gold,
     },
     {
@@ -64,7 +65,7 @@ describe('Parallelism level calculator', () => {
     },
     {
       label: 'high score with worktree',
-      profile: toProfile(4, 7, true),
+      profile: toProfile(5, 5, true),
       expected: AiddLevelValue.gold,
     },
   ])('when $label — assigns $expected level', ({ profile, expected }) => {
@@ -76,6 +77,17 @@ describe('Parallelism level calculator', () => {
 
     // assert
     expect(result).toBe(expected);
+  });
+
+  it('rejects thresholds that are not strictly increasing', () => {
+    const invalidConfig = {
+      ...cfg,
+      levels: { ...cfg.levels, gold: { minScore: 25, requiresWorktree: true } },
+    };
+
+    expect(() => createWeightedParallelismLevelCalculator(invalidConfig)).toThrow(
+      InvalidParallelismThresholdsError,
+    );
   });
 });
 
@@ -121,12 +133,12 @@ describe('MedianOnlyParallelismScoringStrategy', () => {
 
   it('when median reaches gold score without worktree — keeps worktree gate', () => {
     // arrange
-    const profile = toProfile(4, 100, false);
+    const profile = toProfile(6, 100, false);
 
     // act
     const level = calculator.calculate(profile);
 
     // assert
-    expect(level).toBe(AiddLevelValue.copper);
+    expect(level).toBe(AiddLevelValue.silver);
   });
 });

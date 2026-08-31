@@ -82,12 +82,12 @@ describe('Parallelism signal detector', () => {
       expect(matrix.signals).toHaveLength(3);
       expect(matrix.signals[0]).toEqual({
         name: 'medianConcurrentBranches',
-        validated: true,
+        validated: false,
         value: 5,
       });
       expect(matrix.signals[1]).toEqual({
         name: 'maxConcurrentBranches',
-        validated: true,
+        validated: false,
         value: 0,
       });
       expect(matrix.signals[2]).toEqual({
@@ -120,7 +120,7 @@ describe('Parallelism signal detector', () => {
       const detector = createParallelismSignalDetector(cfg);
 
       // act
-      const matrix = detector.detect(toProfile(4, 0, true)); // score = 20, worktree true
+      const matrix = detector.detect(toProfile(6, 0, true)); // score = 30, worktree true
 
       // assert
       expect(matrix.currentLevel).toBe(AiddLevelValue.gold);
@@ -129,7 +129,7 @@ describe('Parallelism signal detector', () => {
       expect(matrix.signals[0]).toEqual({
         name: 'medianConcurrentBranches',
         validated: true,
-        value: 4,
+        value: 6,
       });
       expect(matrix.signals[1]).toEqual({
         name: 'maxConcurrentBranches',

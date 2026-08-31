@@ -61,11 +61,19 @@ describe('Gauvain profile evaluation', () => {
     expect(result.harnessLevel).toBe(AiddLevelValue.gold);
   });
 
-  it('has a parallelism improvement — hasWorktreeInclude not configured', () => {
+  it('has parallelism improvements for the gold score and worktree gate', () => {
     const parallelismImprovements = improvements.filter((i) => i.axis === 'parallelism');
-    expect(parallelismImprovements).toHaveLength(1);
-    expect(parallelismImprovements[0].type).toBe('hasWorktreeInclude');
-    expect(parallelismImprovements[0].targetLevel).toBe(AiddLevelValue.gold);
+    expect(parallelismImprovements).toHaveLength(3);
+    expect(parallelismImprovements.map((improvement) => improvement.type)).toEqual([
+      'medianConcurrentBranches',
+      'maxConcurrentBranches',
+      'hasWorktreeInclude',
+    ]);
+    expect(
+      parallelismImprovements.every(
+        (improvement) => improvement.targetLevel === AiddLevelValue.gold,
+      ),
+    ).toBe(true);
   });
 
   it('parallelism signal for hasWorktreeInclude is not validated', () => {

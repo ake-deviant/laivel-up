@@ -41,6 +41,7 @@ const AXIS_LABEL: Record<ImprovementAxis, string> = {
   intervention: 'Intervention',
   parallelism: 'Parallèle',
   velocity: 'Vélocité',
+  deliveryConfidence: 'Confiance de livraison',
 };
 
 const toLevel = (value: AiddLevelValue): LevelViewModel => ({
@@ -74,6 +75,14 @@ const SIGNAL_LABEL: Record<string, string> = {
   completionRate: 'Taux de complétion',
   cycleTimeRatio: 'Ratio cycle time',
   featureRatio: 'Ratio features',
+  businessImpactScore: 'Valeur métier',
+  deliveryReliabilityScore: 'Fiabilité de livraison',
+  qualityAndRiskScore: 'Qualité et risque',
+  autonomyScore: 'Autonomie',
+  collectiveImpactScore: 'Impact collectif',
+  aiEffectivenessScore: "Efficacité de l'IA",
+  dataConfidenceScore: 'Confiance des données',
+  deliveryConfidenceScore: 'Confiance de livraison',
 };
 
 const toSignals = (matrix: AxisSignalMatrix | undefined): SignalViewModel[] => {
@@ -524,6 +533,34 @@ const toVelocityFieldGroups = (
   },
 ];
 
+const DELIVERY_CONFIDENCE_GROUP_LABELS = {
+  context: "Contexte d'évaluation",
+  businessImpact: 'Valeur métier',
+  deliveryReliability: 'Fiabilité de livraison',
+  qualityAndRisk: 'Qualité et risque',
+  autonomy: 'Autonomie',
+  collectiveImpact: 'Impact collectif',
+  complexity: 'Complexité',
+  aiEffectiveness: "Efficacité de l'IA",
+} as const;
+
+const toDeliveryConfidenceFieldGroups = (
+  profile: DeveloperProfileResult['axisProfiles']['deliveryConfidence'],
+): AxisFieldGroupViewModel[] =>
+  (
+    Object.keys(DELIVERY_CONFIDENCE_GROUP_LABELS) as Array<
+      keyof typeof DELIVERY_CONFIDENCE_GROUP_LABELS
+    >
+  ).map((groupName) => ({
+    name: groupName,
+    label: DELIVERY_CONFIDENCE_GROUP_LABELS[groupName],
+    fields: Object.entries(profile[groupName]).flatMap(([name, value]) =>
+      typeof value === 'number' || typeof value === 'boolean' || value === null
+        ? [field(name, name, name, value)]
+        : [],
+    ),
+  }));
+
 interface MissingDataCatalogEntry {
   axis: MissingDataAxisViewModel;
   field: MissingDataFieldViewModel;
@@ -559,6 +596,7 @@ const PROFILE_MISSING_DATA: Record<string, MissingDataFieldViewModel> = {
 
 const toFieldPath = (axis: AxisViewModel, groupName: string, fieldName: string): string => {
   if (axis.axis === 'harness') return `${axis.axis}.${groupName}.${fieldName}`;
+  if (axis.axis === 'deliveryConfidence') return `${axis.axis}.${groupName}.${fieldName}`;
   if (axis.axis === 'size' && groupName === 'distribution') {
     return `${axis.axis}.${groupName}.${fieldName}`;
   }
@@ -598,6 +636,7 @@ const toMissingDataGroups = (
     'intervention',
     'parallelism',
     'velocity',
+    'deliveryConfidence',
   ];
   const groupLabel: Record<MissingDataAxisViewModel, string> = {
     profile: 'Profil',
@@ -664,6 +703,14 @@ export class DeveloperProfileResultPresenter {
         calculable: result.velocityReadiness.calculable,
         signals: toSignals(matrixByAxis.get('velocity')),
         fieldGroups: toVelocityFieldGroups(result.axisProfiles.velocity),
+      },
+      {
+        axis: 'deliveryConfidence',
+        label: AXIS_LABEL.deliveryConfidence,
+        level: toLevel(result.deliveryConfidenceLevel),
+        calculable: result.deliveryConfidenceReadiness.calculable,
+        signals: toSignals(matrixByAxis.get('deliveryConfidence')),
+        fieldGroups: toDeliveryConfidenceFieldGroups(result.axisProfiles.deliveryConfidence),
       },
     ];
 

@@ -8,6 +8,7 @@ const AXES: AxisViewModel['axis'][] = [
   'intervention',
   'parallelism',
   'velocity',
+  'deliveryConfidence',
 ];
 
 interface AxisPageProps {

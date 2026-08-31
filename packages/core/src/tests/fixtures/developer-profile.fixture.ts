@@ -1,4 +1,5 @@
 import { DeveloperProfile } from '../../domain/entities/developer-profile';
+import { createEmptyDeliveryConfidenceProfile } from '../../domain/entities/delivery-confidence-profile';
 
 const base: DeveloperProfile = {
   id: 'test',
@@ -29,6 +30,7 @@ const base: DeveloperProfile = {
     featuresPerSprint: null,
     bugsPerSprint: null,
   },
+  deliveryConfidence: createEmptyDeliveryConfidenceProfile(),
 };
 
 export class DeveloperProfileFixture {

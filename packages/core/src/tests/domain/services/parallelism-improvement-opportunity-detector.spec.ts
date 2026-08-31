@@ -36,10 +36,10 @@ describe('ParallelismImprovementOpportunityDetector', () => {
 
   describe('when already at gold', () => {
     it('returns no opportunities', () => {
-      // arrange — score = 4*5 + 3*1 = 23 ≥ 20, worktree=true → gold
+      // arrange — score = 5*5 + 5*1 = 30, worktree=true → gold
       const profile = toParallelism({
-        maxConcurrentBranches: 3,
-        medianConcurrentBranches: 4,
+        maxConcurrentBranches: 5,
+        medianConcurrentBranches: 5,
         hasWorktreeInclude: true,
       });
 
@@ -51,11 +51,11 @@ describe('ParallelismImprovementOpportunityDetector', () => {
     });
   });
 
-  describe('when score meets gold threshold but worktree is missing (copper profile)', () => {
-    // score = 4*5 + 0*1 = 20 ≥ 20, no worktree → copper
+  describe('when score meets gold threshold but worktree is missing', () => {
+    // score = 6*5 = 30, no worktree → silver
     const profile = toParallelism({
       maxConcurrentBranches: 0,
-      medianConcurrentBranches: 4,
+      medianConcurrentBranches: 6,
       hasWorktreeInclude: false,
     });
     let opportunities: ReturnType<typeof detector.detect>;
@@ -71,37 +71,23 @@ describe('ParallelismImprovementOpportunityDetector', () => {
       expect(opportunities.find((o) => o.field === 'hasWorktreeInclude')).toMatchObject({
         axis: 'parallelism',
         field: 'hasWorktreeInclude',
-        currentLevel: AiddLevelValue.copper,
+        currentLevel: AiddLevelValue.silver,
         resultingLevel: AiddLevelValue.gold,
-        levelGain: 2,
-      });
-    });
-
-    it('when median can reach silver without worktree — also surfaces medianConcurrentBranches', () => {
-      // arrange / act — done in beforeEach
-      // median=5 → score=25 ≥ 25, no worktree → silver
-
-      // assert
-      expect(opportunities.find((o) => o.field === 'medianConcurrentBranches')).toMatchObject({
-        axis: 'parallelism',
-        field: 'medianConcurrentBranches',
-        currentLevel: AiddLevelValue.copper,
-        resultingLevel: AiddLevelValue.silver,
         levelGain: 1,
       });
     });
 
-    it('ranks hasWorktreeInclude before medianConcurrentBranches — gold outranks silver', () => {
+    it('does not surface a score field when worktree is the only blocker', () => {
       // arrange / act — done in beforeEach
 
       // assert
       expect(opportunities[0].field).toBe('hasWorktreeInclude');
-      expect(opportunities[1].field).toBe('medianConcurrentBranches');
+      expect(opportunities).toHaveLength(1);
     });
   });
 
   describe('when median is too low and worktree is already enabled (blue profile)', () => {
-    // score = 2*5 = 10 ≥ 10, worktree=true → blue (gold requires score ≥ 20)
+    // score = 2*5 = 10, worktree=true → blue (gold requires score ≥ 30)
     const profile = toParallelism({
       maxConcurrentBranches: 0,
       medianConcurrentBranches: 2,
@@ -115,7 +101,7 @@ describe('ParallelismImprovementOpportunityDetector', () => {
 
     it('when increasing median reaches gold — surfaces medianConcurrentBranches reaching gold', () => {
       // arrange / act — done in beforeEach
-      // median=4 → score=20, worktree=true → gold
+      // median=6 → score=30, worktree=true → gold
 
       // assert
       expect(opportunities.find((o) => o.field === 'medianConcurrentBranches')).toMatchObject({
@@ -136,7 +122,7 @@ describe('ParallelismImprovementOpportunityDetector', () => {
   });
 
   describe('when score is below gold threshold and worktree is false', () => {
-    // score = 1*5 = 5 → white; enabling worktree would not unlock gold (score < 20)
+    // score = 1*5 = 5 → white; enabling worktree would not unlock gold (score < 30)
     const profile = toParallelism({
       maxConcurrentBranches: 0,
       medianConcurrentBranches: 1,

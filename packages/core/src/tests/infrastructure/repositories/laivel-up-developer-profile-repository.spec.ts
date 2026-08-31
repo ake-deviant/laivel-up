@@ -31,7 +31,7 @@ describe('LaivelUpDeveloperProfileRepository', () => {
 
       expect(result.isOk).toBe(true);
       if (result.isOk) {
-        expect(result.value.profile.availableSources).toEqual([]);
+        expect(result.value.profile.availableSources).toEqual(['deliveryConfidence']);
         expect(result.value.profile.size).toEqual({
           distribution: null,
           medianFilesChanged: null,
@@ -49,6 +49,11 @@ describe('LaivelUpDeveloperProfileRepository', () => {
           Object.values(result.value.profile.parallelism).every((value) => value === null),
         ).toBe(true);
         expect(result.value.formatWarnings).toEqual([]);
+        expect(result.value.profile.availableSources).toContain('deliveryConfidence');
+        expect(result.value.profile.deliveryConfidence.context.activeDays).toBe(58);
+        expect(result.value.profile.deliveryConfidence.businessImpact.featuresAdoptedRatio).toBe(
+          0.82,
+        );
       }
     });
 

@@ -9,6 +9,7 @@ import { VelocityProfile } from './velocity-profile';
 import { FormatWarning } from '../shared/format-warning';
 import { ImprovementOpportunity } from '../services/improvement-opportunity.service';
 import { AxisReadiness } from '../ports/axis-readiness-checker.port';
+import { DeliveryConfidenceProfile } from './delivery-confidence-profile';
 
 export interface AxisProfiles {
   size: SizeProfile;
@@ -16,6 +17,7 @@ export interface AxisProfiles {
   intervention: InterventionProfile;
   parallelism: ParallelismProfile;
   velocity: VelocityProfile;
+  deliveryConfidence: DeliveryConfidenceProfile;
 }
 
 export interface DeveloperProfileResult {
@@ -25,7 +27,9 @@ export interface DeveloperProfileResult {
   interventionLevel: AiddLevelValue;
   parallelismLevel: AiddLevelValue;
   velocityLevel: AiddLevelValue;
+  deliveryConfidenceLevel: AiddLevelValue;
   velocityReadiness: AxisReadiness;
+  deliveryConfidenceReadiness: AxisReadiness;
   axisProfiles: AxisProfiles;
   signalMatrices: AxisSignalMatrix[];
   improvements: Improvement[];

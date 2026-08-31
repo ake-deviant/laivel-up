@@ -6,10 +6,12 @@ import { ParallelismProfile } from '../../domain/entities/parallelism-profile';
 import { Profile } from '../../domain/entities/profile';
 import { SizeProfile } from '../../domain/entities/size-profile';
 import { VelocityProfile } from '../../domain/entities/velocity-profile';
+import { DeliveryConfidenceProfile } from '../../domain/entities/delivery-confidence-profile';
 import { LaivelUpAiContextInput } from '../inputs/laivel-up-ai-context-input';
 import { LaivelUpGitActivityInput } from '../inputs/laivel-up-git-activity-input';
 import { LaivelUpProfileInput } from '../inputs/laivel-up-profile-input';
 import { LaivelUpSprintMetricsInput } from '../inputs/laivel-up-sprint-metrics-input';
+import { LaivelUpDeliveryConfidenceInput } from '../inputs/laivel-up-delivery-confidence-input';
 
 const AVAILABLE_TO_DATA_SOURCE: Partial<Record<string, DataSource>> = {
   'git-activity.json': DataSource.gitActivity,
@@ -20,6 +22,7 @@ const AVAILABLE_TO_DATA_SOURCE: Partial<Record<string, DataSource>> = {
   'declaratif.md': DataSource.declarative,
   'session.md': DataSource.session,
   'code/': DataSource.code,
+  'delivery-confidence.json': DataSource.deliveryConfidence,
 };
 
 export class DeveloperProfileMapper {
@@ -37,8 +40,112 @@ export class DeveloperProfileMapper {
       intervention: mapIntervention(gitActivity),
       parallelism: mapParallelism(gitActivity, aiContext),
       velocity: mapVelocity(sprintMetrics),
+      deliveryConfidence: mapDeliveryConfidence(input.deliveryConfidence ?? null),
     };
   }
+}
+
+function mapDeliveryConfidence(
+  input: LaivelUpDeliveryConfidenceInput | null,
+): DeliveryConfidenceProfile {
+  return {
+    context: {
+      periodStart: input?.context?.periodStart ?? null,
+      periodEnd: input?.context?.periodEnd ?? null,
+      activeDays: input?.context?.activeDays ?? null,
+      expectedRole: input?.context?.expectedRole ?? null,
+      productCriticality: input?.context?.productCriticality ?? null,
+      codebaseMaturity: input?.context?.codebaseMaturity ?? null,
+      teamStability: input?.context?.teamStability ?? null,
+      supportWorkRatio: input?.context?.supportWorkRatio ?? null,
+      incidentWorkRatio: input?.context?.incidentWorkRatio ?? null,
+      availableSources: input?.context?.availableSources ?? [],
+    },
+    businessImpact: {
+      featuresCompletedCount: input?.businessImpact?.featuresCompletedCount ?? null,
+      featuresAdoptedRatio: input?.businessImpact?.featuresAdoptedRatio ?? null,
+      businessOutcomeAchievementRatio:
+        input?.businessImpact?.businessOutcomeAchievementRatio ?? null,
+      abandonedWorkRatio: input?.businessImpact?.abandonedWorkRatio ?? null,
+      reworkRatio: input?.businessImpact?.reworkRatio ?? null,
+      timeToFirstValueDays: input?.businessImpact?.timeToFirstValueDays ?? null,
+    },
+    deliveryReliability: {
+      commitmentCompletionRatio: input?.deliveryReliability?.commitmentCompletionRatio ?? null,
+      deliveryForecastAccuracy: input?.deliveryReliability?.deliveryForecastAccuracy ?? null,
+      scopeChangeAbsorptionRatio: input?.deliveryReliability?.scopeChangeAbsorptionRatio ?? null,
+      blockedTimeRatio: input?.deliveryReliability?.blockedTimeRatio ?? null,
+      dependencyWaitingTimeDays: input?.deliveryReliability?.dependencyWaitingTimeDays ?? null,
+      medianCycleTimeDays: input?.deliveryReliability?.medianCycleTimeDays ?? null,
+      completionRate: input?.deliveryReliability?.completionRate ?? null,
+    },
+    qualityAndRisk: {
+      changeFailureRate: input?.qualityAndRisk?.changeFailureRate ?? null,
+      escapedDefectRate: input?.qualityAndRisk?.escapedDefectRate ?? null,
+      regressionRate: input?.qualityAndRisk?.regressionRate ?? null,
+      rollbackRate: input?.qualityAndRisk?.rollbackRate ?? null,
+      hotfixRate: input?.qualityAndRisk?.hotfixRate ?? null,
+      defectResolutionTimeDays: input?.qualityAndRisk?.defectResolutionTimeDays ?? null,
+      criticalCodeWithoutTestsRatio: input?.qualityAndRisk?.criticalCodeWithoutTestsRatio ?? null,
+      testCoverageDelta: input?.qualityAndRisk?.testCoverageDelta ?? null,
+      technicalDebtIntroducedRatio: input?.qualityAndRisk?.technicalDebtIntroducedRatio ?? null,
+      technicalDebtResolvedRatio: input?.qualityAndRisk?.technicalDebtResolvedRatio ?? null,
+      securityIssueIntroductionRate: input?.qualityAndRisk?.securityIssueIntroductionRate ?? null,
+      securityIssueResolutionTimeDays:
+        input?.qualityAndRisk?.securityIssueResolutionTimeDays ?? null,
+      productionIncidentContributionRate:
+        input?.qualityAndRisk?.productionIncidentContributionRate ?? null,
+      incidentRecoveryContributionScore:
+        input?.qualityAndRisk?.incidentRecoveryContributionScore ?? null,
+      observabilityCoverageRatio: input?.qualityAndRisk?.observabilityCoverageRatio ?? null,
+      rollbackPreparedRatio: input?.qualityAndRisk?.rollbackPreparedRatio ?? null,
+    },
+    autonomy: {
+      independentDeliveryRatio: input?.autonomy?.independentDeliveryRatio ?? null,
+      clarificationRequestQuality: input?.autonomy?.clarificationRequestQuality ?? null,
+      escalationRelevanceRatio: input?.autonomy?.escalationRelevanceRatio ?? null,
+      decisionReversalRate: input?.autonomy?.decisionReversalRate ?? null,
+      humanCommitRatio: input?.autonomy?.humanCommitRatio ?? null,
+      medianCorrectionCommitsAfterOpen: input?.autonomy?.medianCorrectionCommitsAfterOpen ?? null,
+      mergedWithoutHumanEditRatio: input?.autonomy?.mergedWithoutHumanEditRatio ?? null,
+    },
+    collectiveImpact: {
+      reviewHelpfulnessScore: input?.collectiveImpact?.reviewHelpfulnessScore ?? null,
+      reviewResponseTimeHours: input?.collectiveImpact?.reviewResponseTimeHours ?? null,
+      reviewRiskDetectionRate: input?.collectiveImpact?.reviewRiskDetectionRate ?? null,
+      knowledgeSharingFrequency: input?.collectiveImpact?.knowledgeSharingFrequency ?? null,
+      busFactorContribution: input?.collectiveImpact?.busFactorContribution ?? null,
+      crossTeamDeliveryRatio: input?.collectiveImpact?.crossTeamDeliveryRatio ?? null,
+      mentoringImpactScore: input?.collectiveImpact?.mentoringImpactScore ?? null,
+      handoverSuccessRatio: input?.collectiveImpact?.handoverSuccessRatio ?? null,
+      teamThroughputImpact: input?.collectiveImpact?.teamThroughputImpact ?? null,
+      codeOwnershipConcentration: input?.collectiveImpact?.codeOwnershipConcentration ?? null,
+      documentationFreshnessRatio: input?.collectiveImpact?.documentationFreshnessRatio ?? null,
+    },
+    complexity: {
+      problemAmbiguityScore: input?.complexity?.problemAmbiguityScore ?? null,
+      domainComplexityScore: input?.complexity?.domainComplexityScore ?? null,
+      technicalComplexityScore: input?.complexity?.technicalComplexityScore ?? null,
+      dependencyComplexityScore: input?.complexity?.dependencyComplexityScore ?? null,
+      successfulComplexWorkRatio: input?.complexity?.successfulComplexWorkRatio ?? null,
+      simplificationImpactScore: input?.complexity?.simplificationImpactScore ?? null,
+      architectureDecisionQualityScore: input?.complexity?.architectureDecisionQualityScore ?? null,
+      sizeDistribution: input?.complexity?.sizeDistribution ?? null,
+    },
+    aiEffectiveness: {
+      aiGeneratedChangeAcceptanceRatio:
+        input?.aiEffectiveness?.aiGeneratedChangeAcceptanceRatio ?? null,
+      aiRelatedDefectRate: input?.aiEffectiveness?.aiRelatedDefectRate ?? null,
+      aiVerificationCoverageRatio: input?.aiEffectiveness?.aiVerificationCoverageRatio ?? null,
+      aiCostPerDeliveredOutcome: input?.aiEffectiveness?.aiCostPerDeliveredOutcome ?? null,
+      aiContextReuseRatio: input?.aiEffectiveness?.aiContextReuseRatio ?? null,
+      parallelWorkCompletionRatio: input?.aiEffectiveness?.parallelWorkCompletionRatio ?? null,
+      aiCoauthoredRatio: input?.aiEffectiveness?.aiCoauthoredRatio ?? null,
+      medianConcurrentBranches: input?.aiEffectiveness?.medianConcurrentBranches ?? null,
+      maxConcurrentBranches: input?.aiEffectiveness?.maxConcurrentBranches ?? null,
+      hasWorktreeInclude: input?.aiEffectiveness?.hasWorktreeInclude ?? null,
+    },
+  };
 }
 
 function mapAvailableSources(available: string[]): DataSource[] {

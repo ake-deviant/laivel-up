@@ -3,6 +3,7 @@ export type { Result } from './domain/shared/result';
 export { ok, err, Ok, Err } from './domain/shared/result';
 export { DomainError } from './domain/errors/domain.error';
 export { ParseError } from './domain/errors/parse.error';
+export { InvalidParallelismThresholdsError } from './domain/errors/invalid-parallelism-thresholds.error';
 export type { DeveloperProfile } from './domain/entities/developer-profile';
 export type { DeveloperProfileSummary } from './domain/entities/developer-profile-summary';
 export type {
@@ -17,6 +18,8 @@ export type { HarnessProfile } from './domain/entities/harness-profile';
 export type { InterventionProfile } from './domain/entities/intervention-profile';
 export type { ParallelismProfile } from './domain/entities/parallelism-profile';
 export type { VelocityProfile } from './domain/entities/velocity-profile';
+export type { DeliveryConfidenceProfile } from './domain/entities/delivery-confidence-profile';
+export { createEmptyDeliveryConfidenceProfile } from './domain/entities/delivery-confidence-profile';
 export type { AiddEvaluatorConfig, AxisName } from './domain/entities/aidd-evaluator-config';
 export type {
   HarnessContextEngineeringWeights,
@@ -55,6 +58,7 @@ export {
   createWeightedParallelismLevelCalculator,
   WeightedParallelismScoringStrategy,
   MedianOnlyParallelismScoringStrategy,
+  validateParallelismThresholds,
 } from './domain/services/parallelism-level-calculator.service';
 export type {
   IParallelismLevelCalculator,
@@ -80,6 +84,22 @@ export { createVelocitySignalDetector } from './domain/services/velocity-signal-
 export { createVelocityLevelCalculator } from './domain/services/velocity-level-calculator.service';
 export type { IVelocityLevelCalculator } from './domain/services/velocity-level-calculator.service';
 export { defaultVelocityThresholdsConfig } from './domain/services/velocity-thresholds.config';
+export {
+  createDeliveryConfidenceLevelCalculator,
+  DeliveryConfidenceLevelCalculatorService,
+} from './domain/services/delivery-confidence-level-calculator.service';
+export type {
+  IDeliveryConfidenceLevelCalculator,
+  DeliveryConfidenceCalculation,
+  DeliveryConfidenceScores,
+} from './domain/services/delivery-confidence-level-calculator.service';
+export { defaultDeliveryConfidenceConfig } from './domain/services/delivery-confidence.config';
+export type { DeliveryConfidenceConfig } from './domain/services/delivery-confidence.config';
+export { DeliveryConfidenceReadinessChecker } from './domain/services/delivery-confidence-readiness-checker';
+export {
+  createDeliveryConfidenceSignalDetector,
+  DeliveryConfidenceSignalDetector,
+} from './domain/services/delivery-confidence-signal-detector';
 export { VelocityReadinessChecker } from './domain/services/velocity-readiness-checker';
 export { AxisImprovementService } from './domain/services/axis-improvement.service';
 export { ImprovementOpportunityService } from './domain/services/improvement-opportunity.service';

@@ -3,6 +3,7 @@ import * as path from 'path';
 import { ParseError } from '../../../domain/errors/parse.error';
 import { ZodProfileParser } from '../../../infrastructure/parsers/zod-profile-parser';
 import { LaivelUpDeveloperProfileInputFixture } from '../../fixtures/laivel-up-developer-profile-input.fixture';
+import { createEmptyDeliveryConfidenceProfile } from '../../../domain/entities/delivery-confidence-profile';
 
 const parser = new ZodProfileParser();
 
@@ -18,20 +19,27 @@ function loadScenario(category: 'valid' | 'invalid', name: string) {
   return { input, output };
 }
 
+function withDeliveryConfidence(output: { profile: object }) {
+  return {
+    ...output,
+    profile: { ...output.profile, deliveryConfidence: createEmptyDeliveryConfidenceProfile() },
+  };
+}
+
 describe('ZodProfileParser', () => {
   describe('scenarios — valid', () => {
     it('all-nullable-null: all nullable fields set to null', () => {
       const { input, output } = loadScenario('valid', 'all-nullable-null');
       const result = parser.parse(input);
       expect(result.isOk).toBe(true);
-      if (result.isOk) expect(result.value).toEqual(output);
+      if (result.isOk) expect(result.value).toEqual(withDeliveryConfidence(output));
     });
 
     it('non-blocking-wrong-type: wrong type on a non-blocking field produces a format warning', () => {
       const { input, output } = loadScenario('valid', 'non-blocking-wrong-type');
       const result = parser.parse(input);
       expect(result.isOk).toBe(true);
-      if (result.isOk) expect(result.value).toEqual(output);
+      if (result.isOk) expect(result.value).toEqual(withDeliveryConfidence(output));
     });
   });
 

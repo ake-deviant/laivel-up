@@ -9,6 +9,7 @@ const AXIS_DESCRIPTION: Record<AxisViewModel['axis'], string> = {
   intervention: 'Niveau de reprise humaine pendant la réalisation',
   parallelism: 'Capacité à faire progresser plusieurs travaux à la fois',
   velocity: 'Cadence de livraison comparée à la référence équipe',
+  deliveryConfidence: 'Confiance accordée à une livraison utile, fiable et maîtrisée',
 };
 
 function formatSignalValue(name: string, value: number | boolean | null) {

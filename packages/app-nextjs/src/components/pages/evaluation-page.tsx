@@ -288,7 +288,7 @@ export function EvaluationPreview() {
                   Analyse détaillée
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-primary sm:text-3xl">
-                  Les cinq axes
+                  Les six axes
                 </h2>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">

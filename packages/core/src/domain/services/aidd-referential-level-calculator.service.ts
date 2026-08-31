@@ -10,8 +10,15 @@ import { AiddLevelValue, lowestLevel } from '../entities/aidd-level-value';
 import { IAxisReadinessChecker } from '../ports/axis-readiness-checker.port';
 import { VelocityProfile } from '../entities/velocity-profile';
 import { AiddEvaluatorConfig } from '../entities/aidd-evaluator-config';
+import { DeliveryConfidenceProfile } from '../entities/delivery-confidence-profile';
+import {
+  IDeliveryConfidenceLevelCalculator,
+  createDeliveryConfidenceLevelCalculator,
+} from './delivery-confidence-level-calculator.service';
+import { defaultDeliveryConfidenceConfig } from './delivery-confidence.config';
+import { DeliveryConfidenceReadinessChecker } from './delivery-confidence-readiness-checker';
 
-const DEFAULT_CONFIG: AiddEvaluatorConfig = { nonBlockingAxes: [] };
+const DEFAULT_CONFIG: AiddEvaluatorConfig = { nonBlockingAxes: ['deliveryConfidence'] };
 
 export class AiddReferentialLevelCalculatorService implements IDeveloperProfileEvaluator {
   constructor(
@@ -22,6 +29,10 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
     private readonly velocityCalculator: IVelocityLevelCalculator,
     private readonly velocityReadinessChecker: IAxisReadinessChecker<VelocityProfile>,
     private readonly config: AiddEvaluatorConfig = DEFAULT_CONFIG,
+    private readonly deliveryConfidenceCalculator: IDeliveryConfidenceLevelCalculator = createDeliveryConfidenceLevelCalculator(
+      defaultDeliveryConfidenceConfig,
+    ),
+    private readonly deliveryConfidenceReadinessChecker: IAxisReadinessChecker<DeliveryConfidenceProfile> = new DeliveryConfidenceReadinessChecker(),
   ) {}
 
   evaluate(profile: DeveloperProfile): DeveloperProfileResult {
@@ -33,6 +44,12 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
     const velocityLevel = velocityReadiness.calculable
       ? this.velocityCalculator.calculate(profile.velocity)
       : AiddLevelValue.white;
+    const deliveryConfidenceReadiness = this.deliveryConfidenceReadinessChecker.check(
+      profile.deliveryConfidence,
+    );
+    const deliveryConfidenceLevel = deliveryConfidenceReadiness.calculable
+      ? this.deliveryConfidenceCalculator.calculate(profile.deliveryConfidence).level
+      : AiddLevelValue.white;
 
     const nonBlocking = new Set(this.config.nonBlockingAxes);
 
@@ -43,6 +60,8 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
     if (!nonBlocking.has('parallelism')) axisLevels.push(parallelismLevel);
     if (velocityReadiness.calculable && !nonBlocking.has('velocity'))
       axisLevels.push(velocityLevel);
+    if (deliveryConfidenceReadiness.calculable && !nonBlocking.has('deliveryConfidence'))
+      axisLevels.push(deliveryConfidenceLevel);
 
     return {
       overallLevel: lowestLevel(...axisLevels),
@@ -51,13 +70,16 @@ export class AiddReferentialLevelCalculatorService implements IDeveloperProfileE
       interventionLevel,
       parallelismLevel,
       velocityLevel,
+      deliveryConfidenceLevel,
       velocityReadiness,
+      deliveryConfidenceReadiness,
       axisProfiles: {
         size: profile.size,
         harness: profile.harness,
         intervention: profile.intervention,
         parallelism: profile.parallelism,
         velocity: profile.velocity,
+        deliveryConfidence: profile.deliveryConfidence,
       },
       signalMatrices: [],
       improvements: [],

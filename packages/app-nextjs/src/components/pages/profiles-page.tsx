@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type {
   AxisViewModel,
@@ -20,6 +21,7 @@ const AXES: Array<{ name: AxisViewModel['axis']; label: string }> = [
   { name: 'intervention', label: 'Intervention' },
   { name: 'parallelism', label: 'Parallélisme' },
   { name: 'velocity', label: 'Vélocité' },
+  { name: 'deliveryConfidence', label: 'Confiance de livraison' },
 ];
 
 interface ProfileRow {
@@ -64,6 +66,7 @@ async function evaluateProfile(
 }
 
 export function ProfilesTable() {
+  const router = useRouter();
   const { config, isReady } = useEvaluatorConfig();
   const [rows, setRows] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,19 +170,46 @@ export function ProfilesTable() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {rows.map(({ profile, result, error: rowError }) => (
-                    <tr key={profile.id} className="transition-colors hover:bg-surface-muted">
+                    <tr
+                      key={profile.id}
+                      role="link"
+                      tabIndex={0}
+                      aria-label={`Voir le détail du profil ${profile.id}`}
+                      onClick={() => router.push(`/?profile=${encodeURIComponent(profile.id)}`)}
+                      onKeyDown={(event) => {
+                        if (event.key !== 'Enter' && event.key !== ' ') return;
+                        event.preventDefault();
+                        router.push(`/?profile=${encodeURIComponent(profile.id)}`);
+                      }}
+                      className="cursor-pointer transition-colors hover:bg-sky-100 focus-visible:bg-sky-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                    >
                       <th scope="row" className="px-5 py-4">
-                        <span className="font-semibold text-primary">{profile.id}</span>
-                        {profile.role && (
-                          <span className="mt-1 block text-xs font-normal text-text-muted">
-                            {profile.role}
+                        <Link
+                          href={`/?profile=${encodeURIComponent(profile.id)}`}
+                          onClick={(event) => event.stopPropagation()}
+                          className="group inline-block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                          aria-label={`Voir le détail du profil ${profile.id}`}
+                        >
+                          <span className="font-semibold text-primary underline-offset-4 group-hover:underline">
+                            {profile.id}
                           </span>
-                        )}
+                          {profile.role && (
+                            <span className="mt-1 block text-xs font-normal text-text-muted">
+                              {profile.role}
+                            </span>
+                          )}
+                        </Link>
                       </th>
                       {result ? (
                         <>
                           <td className="px-4 py-4 text-center">
-                            <LevelBadge level={result.overallLevel} />
+                            <Link
+                              href={`/?profile=${encodeURIComponent(profile.id)}`}
+                              onClick={(event) => event.stopPropagation()}
+                              aria-label={`Voir le détail du profil ${profile.id}, level global ${result.overallLevel.label}`}
+                            >
+                              <LevelBadge level={result.overallLevel} />
+                            </Link>
                           </td>
                           {AXES.map((axisDefinition) => {
                             const axis = result.axes.find(
@@ -190,6 +220,7 @@ export function ProfilesTable() {
                                 {axis ? (
                                   <Link
                                     href={`/${encodeURIComponent(profile.id)}/${axis.axis}`}
+                                    onClick={(event) => event.stopPropagation()}
                                     aria-label={`${profile.id}, ${axis.label}, level ${axis.level.label}`}
                                   >
                                     <LevelBadge level={axis.level} />
@@ -202,7 +233,7 @@ export function ProfilesTable() {
                           })}
                         </>
                       ) : (
-                        <td colSpan={6} className="px-4 py-4 text-sm text-rose-700">
+                        <td colSpan={7} className="px-4 py-4 text-sm text-rose-700">
                           {rowError ?? 'Evaluation impossible'}
                         </td>
                       )}

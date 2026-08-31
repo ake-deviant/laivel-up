@@ -45,7 +45,7 @@ export interface ImprovementViewModel {
 }
 
 export interface ImprovementOpportunityViewModel {
-  axis: 'harness' | 'size' | 'intervention' | 'parallelism' | 'velocity';
+  axis: 'harness' | 'size' | 'intervention' | 'parallelism' | 'velocity' | 'deliveryConfidence';
   field: string;
   currentLevel: LevelViewModel;
   resultingLevel: LevelViewModel;

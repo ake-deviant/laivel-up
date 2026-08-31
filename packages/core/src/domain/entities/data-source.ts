@@ -7,6 +7,7 @@ export const DataSource = {
   declarative: 'declarative',
   session: 'session',
   code: 'code',
+  deliveryConfidence: 'deliveryConfidence',
 } as const;
 
 export type DataSource = (typeof DataSource)[keyof typeof DataSource];

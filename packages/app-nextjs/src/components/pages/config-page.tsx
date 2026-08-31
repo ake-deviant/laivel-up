@@ -26,6 +26,7 @@ import { Button } from '../ui/button';
 import { NumberInput } from '../ui/number-input';
 import { PageHeader } from '../ui/page-header';
 import { SectionCard } from '../ui/section-card';
+import { getParallelismThresholdError } from '../../config/default-evaluation-config';
 
 const AXES: { name: AxisName; label: string; description: string }[] = [
   { name: 'size', label: 'Taille', description: 'Distribution des PRs de XS à XL' },
@@ -33,6 +34,11 @@ const AXES: { name: AxisName; label: string; description: string }[] = [
   { name: 'intervention', label: 'Intervention', description: 'Corrections et reprises humaines' },
   { name: 'parallelism', label: 'Parallélisme', description: 'Branches simultanées et worktrees' },
   { name: 'velocity', label: 'Vélocité', description: 'Cadence comparée à la moyenne équipe' },
+  {
+    name: 'deliveryConfidence',
+    label: 'Confiance',
+    description: 'Valeur, fiabilité, qualité et impact collectif',
+  },
 ];
 
 const PARALLELISM_WEIGHT_LABELS: Record<keyof ParallelismWeights, string> = {
@@ -48,6 +54,8 @@ const PARALLELISM_THRESHOLD_LABELS: Record<keyof ParallelismLevelThresholds, str
   silver: 'Seuil silver',
   gold: 'Seuil gold',
 };
+
+const PARALLELISM_LEVEL_ORDER = ['red', 'blue', 'green', 'copper', 'silver', 'gold'] as const;
 
 const SIZE_THRESHOLD_LABELS: Record<keyof WeightedAverageSizeThresholdsConfig, string> = {
   red: 'Seuil red',
@@ -124,6 +132,10 @@ function AlgorithmSelector<TId extends string>({
 export function ConfigPreview() {
   const { config, update, reset } = useEvaluatorConfig();
   const [resetConfirmation, setResetConfirmation] = useState<string | null>(null);
+  const [parallelismThresholdError, setParallelismThresholdError] = useState<{
+    key: keyof ParallelismLevelThresholds;
+    message: string;
+  } | null>(null);
 
   const toggleAxis = (axis: AxisName) => {
     const nonBlockingAxes = config.nonBlockingAxes.includes(axis)
@@ -137,8 +149,15 @@ export function ConfigPreview() {
   };
 
   const setParallelismThreshold = (key: keyof ParallelismLevelThresholds, value: number) => {
+    const nextThresholds = { ...config.parallelismLevelThresholds, [key]: value };
+    const message = getParallelismThresholdError(nextThresholds);
+    if (message) {
+      setParallelismThresholdError({ key, message });
+      return;
+    }
+    setParallelismThresholdError(null);
     update({
-      parallelismLevelThresholds: { ...config.parallelismLevelThresholds, [key]: value },
+      parallelismLevelThresholds: nextThresholds,
     });
   };
 
@@ -166,6 +185,7 @@ export function ConfigPreview() {
     );
     if (!confirmed) return;
     reset();
+    setParallelismThresholdError(null);
     setResetConfirmation('Configuration initiale restaurée.');
   };
 
@@ -202,7 +222,7 @@ export function ConfigPreview() {
           title="Contribution au niveau global"
           description="Un axe bloquant participe au calcul du overallLevel. Clique sur son statut pour modifier sa contribution."
         >
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {AXES.map(({ name, label, description }) => {
               const isBlocking = !config.nonBlockingAxes.includes(name);
               return (
@@ -317,15 +337,28 @@ export function ConfigPreview() {
             <div className="mt-3 grid gap-3 md:grid-cols-3">
               {(
                 Object.keys(PARALLELISM_THRESHOLD_LABELS) as (keyof ParallelismLevelThresholds)[]
-              ).map((key) => (
-                <NumberInput
-                  key={key}
-                  id={`parallelism-threshold-${key}`}
-                  label={PARALLELISM_THRESHOLD_LABELS[key]}
-                  value={config.parallelismLevelThresholds[key]}
-                  onChange={(value) => setParallelismThreshold(key, value)}
-                />
-              ))}
+              ).map((key) => {
+                const index = PARALLELISM_LEVEL_ORDER.indexOf(key);
+                const previous = PARALLELISM_LEVEL_ORDER[index - 1];
+                const next = PARALLELISM_LEVEL_ORDER[index + 1];
+                return (
+                  <NumberInput
+                    key={key}
+                    id={`parallelism-threshold-${key}`}
+                    label={PARALLELISM_THRESHOLD_LABELS[key]}
+                    value={config.parallelismLevelThresholds[key]}
+                    min={previous ? config.parallelismLevelThresholds[previous] + 1 : 0}
+                    max={next ? config.parallelismLevelThresholds[next] - 1 : undefined}
+                    error={
+                      parallelismThresholdError?.key === key
+                        ? parallelismThresholdError.message
+                        : undefined
+                    }
+                    clampValue={false}
+                    onChange={(value) => setParallelismThreshold(key, value)}
+                  />
+                );
+              })}
             </div>
           </div>
         </SectionCard>

@@ -30,6 +30,7 @@ export interface EvaluationAlgorithmsConfig {
 }
 
 export interface EvaluationConfig {
+  version: 2;
   nonBlockingAxes: AxisName[];
   parallelismWeights: ParallelismWeights;
   parallelismLevelThresholds: ParallelismLevelThresholds;

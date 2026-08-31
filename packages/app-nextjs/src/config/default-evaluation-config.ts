@@ -13,7 +13,14 @@ import type {
   SizeAlgorithm,
 } from '../types/evaluation-config';
 
-const AXES: AxisName[] = ['size', 'harness', 'intervention', 'parallelism', 'velocity'];
+const AXES: AxisName[] = [
+  'size',
+  'harness',
+  'intervention',
+  'parallelism',
+  'velocity',
+  'deliveryConfidence',
+];
 const PARALLELISM_ALGORITHMS: ParallelismAlgorithm[] = ['weighted', 'median-only'];
 const HARNESS_ALGORITHMS: HarnessAlgorithm[] = ['weighted-score', 'capability-gates'];
 const SIZE_ALGORITHMS: SizeAlgorithm[] = ['dominant-distribution', 'weighted-average'];
@@ -25,7 +32,7 @@ const INITIAL_PARALLELISM_LEVEL_THRESHOLDS: ParallelismLevelThresholds = {
   green: 15,
   copper: 20,
   silver: 25,
-  gold: 20,
+  gold: 30,
 };
 const INITIAL_SIZE_WEIGHTED_AVERAGE_THRESHOLDS: WeightedAverageSizeThresholdsConfig = {
   red: 0.5,
@@ -55,9 +62,32 @@ const INITIAL_HARNESS_AI_WEIGHTS: HarnessAiConfigurationWeights = {
   rulesCount: 4,
 };
 
+const PARALLELISM_LEVEL_ORDER = ['red', 'blue', 'green', 'copper', 'silver', 'gold'] as const;
+
+export class EvaluationConfigValidationError extends Error {}
+
+export function getParallelismThresholdError(
+  thresholds: ParallelismLevelThresholds,
+): string | null {
+  for (const level of PARALLELISM_LEVEL_ORDER) {
+    if (!Number.isFinite(thresholds[level]) || thresholds[level] < 0) {
+      return `Le threshold ${level} doit être un nombre positif ou nul.`;
+    }
+  }
+  for (let index = 1; index < PARALLELISM_LEVEL_ORDER.length; index += 1) {
+    const previous = PARALLELISM_LEVEL_ORDER[index - 1];
+    const current = PARALLELISM_LEVEL_ORDER[index];
+    if (thresholds[current] <= thresholds[previous]) {
+      return `Le threshold ${current} doit être supérieur au threshold ${previous} (${thresholds[previous]}).`;
+    }
+  }
+  return null;
+}
+
 export function createDefaultEvaluationConfig(): EvaluationConfig {
   return {
-    nonBlockingAxes: ['velocity'],
+    version: 2,
+    nonBlockingAxes: ['velocity', 'deliveryConfidence'],
     parallelismWeights: { ...INITIAL_PARALLELISM_WEIGHTS },
     parallelismLevelThresholds: { ...INITIAL_PARALLELISM_LEVEL_THRESHOLDS },
     harnessContextWeights: { ...INITIAL_HARNESS_CONTEXT_WEIGHTS },
@@ -96,21 +126,32 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
   const parallelismAlgorithm = algorithms.parallelism;
   const harnessAlgorithm = algorithms.harness;
   const sizeAlgorithm = algorithms.size;
+  const mergedParallelismLevelThresholds = mergeNumericConfig<ParallelismLevelThresholds>(
+    defaults.parallelismLevelThresholds,
+    value.parallelismLevelThresholds,
+  );
+  const parallelismLevelThresholds = getParallelismThresholdError(mergedParallelismLevelThresholds)
+    ? defaults.parallelismLevelThresholds
+    : mergedParallelismLevelThresholds;
+
+  const storedNonBlockingAxes = Array.isArray(value.nonBlockingAxes)
+    ? value.nonBlockingAxes.filter(
+        (axis): axis is AxisName => typeof axis === 'string' && AXES.includes(axis as AxisName),
+      )
+    : defaults.nonBlockingAxes;
+  const nonBlockingAxes =
+    value.version === 2
+      ? storedNonBlockingAxes
+      : [...new Set([...storedNonBlockingAxes, 'deliveryConfidence' as AxisName])];
 
   return {
-    nonBlockingAxes: Array.isArray(value.nonBlockingAxes)
-      ? value.nonBlockingAxes.filter(
-          (axis): axis is AxisName => typeof axis === 'string' && AXES.includes(axis as AxisName),
-        )
-      : defaults.nonBlockingAxes,
+    version: 2,
+    nonBlockingAxes,
     parallelismWeights: mergeNumericConfig<ParallelismWeights>(
       defaults.parallelismWeights,
       value.parallelismWeights,
     ),
-    parallelismLevelThresholds: mergeNumericConfig<ParallelismLevelThresholds>(
-      defaults.parallelismLevelThresholds,
-      value.parallelismLevelThresholds,
-    ),
+    parallelismLevelThresholds,
     harnessContextWeights: mergeNumericConfig<HarnessContextEngineeringWeights>(
       defaults.harnessContextWeights,
       value.harnessContextWeights,
@@ -141,4 +182,17 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
           : defaults.algorithms.size,
     },
   };
+}
+
+export function parseEvaluationConfig(value: unknown): EvaluationConfig {
+  const defaults = createDefaultEvaluationConfig();
+  if (isRecord(value)) {
+    const thresholds = mergeNumericConfig<ParallelismLevelThresholds>(
+      defaults.parallelismLevelThresholds,
+      value.parallelismLevelThresholds,
+    );
+    const error = getParallelismThresholdError(thresholds);
+    if (error) throw new EvaluationConfigValidationError(error);
+  }
+  return mergeEvaluationConfig(value);
 }
