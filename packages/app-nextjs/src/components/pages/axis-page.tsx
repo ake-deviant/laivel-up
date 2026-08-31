@@ -37,12 +37,14 @@ export function AxisPreview({ profileId, axisName }: AxisPreviewProps) {
   const [axis, setAxis] = useState<AxisViewModel | null>(null);
   const [improvements, setImprovements] = useState<ImprovementViewModel[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const { config } = useEvaluatorConfig();
+  const { config, isReady } = useEvaluatorConfig();
 
   useEffect(() => {
     let active = true;
 
     async function loadAxis() {
+      if (!isReady) return;
+
       try {
         const response = await fetch(`/api/evaluate/${encodeURIComponent(profileId)}`, {
           method: 'POST',
@@ -81,7 +83,7 @@ export function AxisPreview({ profileId, axisName }: AxisPreviewProps) {
     return () => {
       active = false;
     };
-  }, [axisName, config, profileId]);
+  }, [axisName, config, isReady, profileId]);
 
   const presentation = axis ? getLevelPresentation(axis.level) : null;
   const evaluationHref = `/?profile=${encodeURIComponent(profileId)}`;

@@ -5,17 +5,21 @@ import type {
   AxisName,
   HarnessAiConfigurationWeights,
   HarnessContextEngineeringWeights,
+  WeightedAverageSizeThresholdsConfig,
 } from '@laivel-up/core';
 import { useEvaluatorConfig } from '../../hooks/use-evaluator-config';
 import {
   HARNESS_ALGORITHMS,
   PARALLELISM_ALGORITHMS,
+  SIZE_ALGORITHMS,
   type AlgorithmOption,
 } from '../../config/evaluation-algorithms';
 import type {
   HarnessAlgorithm,
   ParallelismAlgorithm,
+  ParallelismLevelThresholds,
   ParallelismWeights,
+  SizeAlgorithm,
 } from '../../types/evaluation-config';
 import { AppShell } from '../ui/app-shell';
 import { Button } from '../ui/button';
@@ -34,6 +38,24 @@ const AXES: { name: AxisName; label: string; description: string }[] = [
 const PARALLELISM_WEIGHT_LABELS: Record<keyof ParallelismWeights, string> = {
   median: 'Poids de la médiane',
   max: 'Poids du maximum',
+};
+
+const PARALLELISM_THRESHOLD_LABELS: Record<keyof ParallelismLevelThresholds, string> = {
+  red: 'Seuil red',
+  blue: 'Seuil blue',
+  green: 'Seuil green',
+  copper: 'Seuil copper',
+  silver: 'Seuil silver',
+  gold: 'Seuil gold',
+};
+
+const SIZE_THRESHOLD_LABELS: Record<keyof WeightedAverageSizeThresholdsConfig, string> = {
+  red: 'Seuil red',
+  blue: 'Seuil blue',
+  green: 'Seuil green',
+  copper: 'Seuil copper',
+  silver: 'Seuil silver',
+  gold: 'Seuil gold',
 };
 
 const HARNESS_CONTEXT_LABELS: Record<keyof HarnessContextEngineeringWeights, string> = {
@@ -114,12 +136,28 @@ export function ConfigPreview() {
     update({ parallelismWeights: { ...config.parallelismWeights, [key]: value } });
   };
 
+  const setParallelismThreshold = (key: keyof ParallelismLevelThresholds, value: number) => {
+    update({
+      parallelismLevelThresholds: { ...config.parallelismLevelThresholds, [key]: value },
+    });
+  };
+
   const selectParallelismAlgorithm = (parallelism: ParallelismAlgorithm) => {
     update({ algorithms: { ...config.algorithms, parallelism } });
   };
 
   const selectHarnessAlgorithm = (harness: HarnessAlgorithm) => {
     update({ algorithms: { ...config.algorithms, harness } });
+  };
+
+  const selectSizeAlgorithm = (size: SizeAlgorithm) => {
+    update({ algorithms: { ...config.algorithms, size } });
+  };
+
+  const setSizeThreshold = (key: keyof WeightedAverageSizeThresholdsConfig, value: number) => {
+    update({
+      sizeWeightedAverageThresholds: { ...config.sizeWeightedAverageThresholds, [key]: value },
+    });
   };
 
   const resetConfig = () => {
@@ -201,6 +239,43 @@ export function ConfigPreview() {
         </SectionCard>
 
         <SectionCard
+          eyebrow="Taille"
+          title="Calcul du level"
+          description="Choisis entre la catégorie dominante et une moyenne qui tient compte de toute la distribution."
+          compact
+        >
+          <AlgorithmSelector
+            options={SIZE_ALGORITHMS}
+            selected={config.algorithms.size}
+            onSelect={selectSizeAlgorithm}
+          />
+
+          {config.algorithms.size === 'weighted-average' && (
+            <div className="mt-6 border-t border-border pt-5">
+              <h3 className="text-sm font-bold text-primary">Seuils du score moyen</h3>
+              <p className="mt-1 text-xs leading-5 text-text-muted">
+                Le score va de 0 (XS uniquement) à 4 (XL uniquement).
+              </p>
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                {(
+                  Object.keys(
+                    SIZE_THRESHOLD_LABELS,
+                  ) as (keyof WeightedAverageSizeThresholdsConfig)[]
+                ).map((key) => (
+                  <NumberInput
+                    key={key}
+                    id={`size-threshold-${key}`}
+                    label={SIZE_THRESHOLD_LABELS[key]}
+                    value={config.sizeWeightedAverageThresholds[key]}
+                    onChange={(value) => setSizeThreshold(key, value)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard
           eyebrow="Parallélisme"
           title="Calcul du score"
           description="Choisis la logique métier utilisée pour calculer le score, puis ajuste ses poids."
@@ -231,6 +306,26 @@ export function ConfigPreview() {
                     onChange={(value) => setParallelismWeight(key, value)}
                   />
                 ))}
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-5">
+            <h3 className="text-sm font-bold text-primary">Seuils du score</h3>
+            <p className="mt-1 text-xs leading-5 text-text-muted">
+              Score minimal requis pour atteindre chaque level.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              {(
+                Object.keys(PARALLELISM_THRESHOLD_LABELS) as (keyof ParallelismLevelThresholds)[]
+              ).map((key) => (
+                <NumberInput
+                  key={key}
+                  id={`parallelism-threshold-${key}`}
+                  label={PARALLELISM_THRESHOLD_LABELS[key]}
+                  value={config.parallelismLevelThresholds[key]}
+                  onChange={(value) => setParallelismThreshold(key, value)}
+                />
+              ))}
             </div>
           </div>
         </SectionCard>

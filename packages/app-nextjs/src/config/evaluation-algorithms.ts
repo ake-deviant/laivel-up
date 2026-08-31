@@ -1,4 +1,8 @@
-import type { HarnessAlgorithm, ParallelismAlgorithm } from '../types/evaluation-config';
+import type {
+  HarnessAlgorithm,
+  ParallelismAlgorithm,
+  SizeAlgorithm,
+} from '../types/evaluation-config';
 
 export interface AlgorithmOption<TId extends string> {
   id: TId;
@@ -19,6 +23,22 @@ export const PARALLELISM_ALGORITHMS: AlgorithmOption<ParallelismAlgorithm>[] = [
     label: 'Médiane uniquement',
     description: "Seule la pratique habituelle compte. Les pics isolés n'influencent pas le level.",
     formula: 'médiane × poids',
+  },
+];
+
+export const SIZE_ALGORITHMS: AlgorithmOption<SizeAlgorithm>[] = [
+  {
+    id: 'dominant-distribution',
+    label: 'Distribution dominante',
+    description: 'Le level dépend de la taille de PR dominante, puis de la part des PR L et XL.',
+    formula: 'catégorie dominante + ratios L / XL',
+  },
+  {
+    id: 'weighted-average',
+    label: 'Taille moyenne pondérée',
+    description:
+      'Toutes les tailles de PR contribuent à un score moyen, même sans catégorie majoritaire.',
+    formula: 'XS × 0 + S × 1 + M × 2 + L × 3 + XL × 4',
   },
 ];
 

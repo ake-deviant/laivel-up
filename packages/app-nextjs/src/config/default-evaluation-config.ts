@@ -2,19 +2,39 @@ import type {
   AxisName,
   HarnessAiConfigurationWeights,
   HarnessContextEngineeringWeights,
+  WeightedAverageSizeThresholdsConfig,
 } from '@laivel-up/core';
 import type {
   EvaluationConfig,
   HarnessAlgorithm,
+  ParallelismLevelThresholds,
   ParallelismAlgorithm,
   ParallelismWeights,
+  SizeAlgorithm,
 } from '../types/evaluation-config';
 
 const AXES: AxisName[] = ['size', 'harness', 'intervention', 'parallelism', 'velocity'];
 const PARALLELISM_ALGORITHMS: ParallelismAlgorithm[] = ['weighted', 'median-only'];
 const HARNESS_ALGORITHMS: HarnessAlgorithm[] = ['weighted-score', 'capability-gates'];
+const SIZE_ALGORITHMS: SizeAlgorithm[] = ['dominant-distribution', 'weighted-average'];
 
 const INITIAL_PARALLELISM_WEIGHTS: ParallelismWeights = { median: 5, max: 1 };
+const INITIAL_PARALLELISM_LEVEL_THRESHOLDS: ParallelismLevelThresholds = {
+  red: 7,
+  blue: 10,
+  green: 15,
+  copper: 20,
+  silver: 25,
+  gold: 20,
+};
+const INITIAL_SIZE_WEIGHTED_AVERAGE_THRESHOLDS: WeightedAverageSizeThresholdsConfig = {
+  red: 0.5,
+  blue: 1.25,
+  green: 2,
+  copper: 2.5,
+  silver: 3,
+  gold: 3.5,
+};
 
 const INITIAL_HARNESS_CONTEXT_WEIGHTS: HarnessContextEngineeringWeights = {
   claudeMd: 4,
@@ -39,9 +59,15 @@ export function createDefaultEvaluationConfig(): EvaluationConfig {
   return {
     nonBlockingAxes: ['velocity'],
     parallelismWeights: { ...INITIAL_PARALLELISM_WEIGHTS },
+    parallelismLevelThresholds: { ...INITIAL_PARALLELISM_LEVEL_THRESHOLDS },
     harnessContextWeights: { ...INITIAL_HARNESS_CONTEXT_WEIGHTS },
     harnessAiWeights: { ...INITIAL_HARNESS_AI_WEIGHTS },
-    algorithms: { parallelism: 'weighted', harness: 'weighted-score' },
+    sizeWeightedAverageThresholds: { ...INITIAL_SIZE_WEIGHTED_AVERAGE_THRESHOLDS },
+    algorithms: {
+      parallelism: 'weighted',
+      harness: 'weighted-score',
+      size: 'dominant-distribution',
+    },
   };
 }
 
@@ -69,6 +95,7 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
   const algorithms = isRecord(value.algorithms) ? value.algorithms : {};
   const parallelismAlgorithm = algorithms.parallelism;
   const harnessAlgorithm = algorithms.harness;
+  const sizeAlgorithm = algorithms.size;
 
   return {
     nonBlockingAxes: Array.isArray(value.nonBlockingAxes)
@@ -80,6 +107,10 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
       defaults.parallelismWeights,
       value.parallelismWeights,
     ),
+    parallelismLevelThresholds: mergeNumericConfig<ParallelismLevelThresholds>(
+      defaults.parallelismLevelThresholds,
+      value.parallelismLevelThresholds,
+    ),
     harnessContextWeights: mergeNumericConfig<HarnessContextEngineeringWeights>(
       defaults.harnessContextWeights,
       value.harnessContextWeights,
@@ -87,6 +118,10 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
     harnessAiWeights: mergeNumericConfig<HarnessAiConfigurationWeights>(
       defaults.harnessAiWeights,
       value.harnessAiWeights,
+    ),
+    sizeWeightedAverageThresholds: mergeNumericConfig<WeightedAverageSizeThresholdsConfig>(
+      defaults.sizeWeightedAverageThresholds,
+      value.sizeWeightedAverageThresholds,
     ),
     algorithms: {
       parallelism:
@@ -99,6 +134,11 @@ export function mergeEvaluationConfig(value: unknown): EvaluationConfig {
         HARNESS_ALGORITHMS.includes(harnessAlgorithm as HarnessAlgorithm)
           ? (harnessAlgorithm as HarnessAlgorithm)
           : defaults.algorithms.harness,
+      size:
+        typeof sizeAlgorithm === 'string' &&
+        SIZE_ALGORITHMS.includes(sizeAlgorithm as SizeAlgorithm)
+          ? (sizeAlgorithm as SizeAlgorithm)
+          : defaults.algorithms.size,
     },
   };
 }

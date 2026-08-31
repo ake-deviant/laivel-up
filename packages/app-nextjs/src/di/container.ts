@@ -29,6 +29,8 @@ import {
   defaultVelocityThresholdsConfig,
   VelocityReadinessChecker,
   createSizeSignalDetector,
+  createWeightedAverageSizeSignalDetector,
+  WeightedAverageSizeLevelCalculator,
   createHarnessSignalDetector,
   createInterventionSignalDetector,
   createParallelismSignalDetector,
@@ -40,7 +42,6 @@ import {
   IVelocityLevelCalculator,
   IAxisSignalDetector,
   IDeveloperProfileRepository,
-  SizeProfile,
   InterventionProfile,
   VelocityProfile,
   VelocityImprovementOpportunityDetector,
@@ -149,8 +150,29 @@ export function buildEvaluateUseCase(config: EvaluationConfig): EvaluateDevelope
   const parallelismConfig = {
     ...defaultParallelismThresholdsConfig,
     weights: config.parallelismWeights,
+    levels: {
+      red: { minScore: config.parallelismLevelThresholds.red },
+      blue: { minScore: config.parallelismLevelThresholds.blue },
+      green: { minScore: config.parallelismLevelThresholds.green },
+      copper: { minScore: config.parallelismLevelThresholds.copper },
+      silver: { minScore: config.parallelismLevelThresholds.silver },
+      gold: {
+        minScore: config.parallelismLevelThresholds.gold,
+        requiresWorktree: true,
+      },
+    },
   };
-  const sizeCalculator = g<ISizeLevelCalculator>(DI.SIZE_LEVEL_CALCULATOR);
+  const sizeCalculator: ISizeLevelCalculator =
+    config.algorithms.size === 'weighted-average'
+      ? new WeightedAverageSizeLevelCalculator(config.sizeWeightedAverageThresholds)
+      : g<ISizeLevelCalculator>(DI.SIZE_LEVEL_CALCULATOR);
+  const sizeSignalDetector =
+    config.algorithms.size === 'weighted-average'
+      ? createWeightedAverageSizeSignalDetector(
+          config.sizeWeightedAverageThresholds,
+          sizeCalculator,
+        )
+      : createSizeSignalDetector(defaultSizeThresholdsConfig);
   const harnessCalculator =
     config.algorithms.harness === 'capability-gates'
       ? createCapabilityGatesHarnessLevelCalculator(defaultCapabilityGatesHarnessConfig)
@@ -205,7 +227,7 @@ export function buildEvaluateUseCase(config: EvaluationConfig): EvaluateDevelope
       { nonBlockingAxes: config.nonBlockingAxes },
     ),
     g<ImprovementCollector>(DI.IMPROVEMENT_COLLECTOR),
-    g<IAxisSignalDetector<SizeProfile>>(DI.SIZE_SIGNAL_DETECTOR),
+    sizeSignalDetector,
     harnessSignalDetector,
     g<IAxisSignalDetector<InterventionProfile>>(DI.INTERVENTION_SIGNAL_DETECTOR),
     parallelismSignalDetector,

@@ -19,15 +19,36 @@ export function useEvaluatorConfig(): {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    function readStoredConfig() {
       try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return createDefaultEvaluationConfig();
         setConfig(mergeEvaluationConfig(JSON.parse(stored) as unknown));
+      } catch {
+        return createDefaultEvaluationConfig();
+      }
+      return null;
+    }
+
+    const fallback = readStoredConfig();
+    if (fallback) setConfig(fallback);
+    setIsReady(true);
+
+    function synchronizeConfig(event: StorageEvent) {
+      if (event.key !== STORAGE_KEY) return;
+      try {
+        setConfig(
+          event.newValue
+            ? mergeEvaluationConfig(JSON.parse(event.newValue) as unknown)
+            : createDefaultEvaluationConfig(),
+        );
       } catch {
         setConfig(createDefaultEvaluationConfig());
       }
     }
-    setIsReady(true);
+
+    window.addEventListener('storage', synchronizeConfig);
+    return () => window.removeEventListener('storage', synchronizeConfig);
   }, []);
 
   function update(next: Partial<EvaluationConfig>) {

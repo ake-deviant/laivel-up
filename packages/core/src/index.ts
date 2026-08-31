@@ -41,6 +41,12 @@ export { AiddReferentialLevelCalculatorService } from './domain/services/aidd-re
 export { SizeLevelCalculatorService } from './domain/services/size-level-calculator.service';
 export type { ISizeLevelCalculator } from './domain/services/size-level-calculator.service';
 export { defaultSizeThresholdsConfig } from './domain/services/size-thresholds.config';
+export {
+  WeightedAverageSizeLevelCalculator,
+  calculateWeightedAverageSizeScore,
+} from './domain/services/weighted-average-size-level-calculator.service';
+export type { WeightedAverageSizeThresholdsConfig } from './domain/services/weighted-average-size-level-calculator.service';
+export { defaultWeightedAverageSizeThresholdsConfig } from './domain/services/weighted-average-size-thresholds.config';
 export { createInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
 export type { IInterventionLevelCalculator } from './domain/services/intervention-level-calculator.service';
 export { defaultInterventionThresholdsConfig } from './domain/services/intervention-thresholds.config';
@@ -65,6 +71,7 @@ export {
 } from './domain/services/capability-gates-harness-level-calculator.service';
 export type { CapabilityGatesHarnessConfig } from './domain/services/capability-gates-harness-level-calculator.service';
 export { createSizeSignalDetector } from './domain/services/size-signal-detector';
+export { createWeightedAverageSizeSignalDetector } from './domain/services/weighted-average-size-signal-detector';
 export { createHarnessSignalDetector } from './domain/services/harness-signal-detector';
 export { createCapabilityGatesHarnessSignalDetector } from './domain/services/capability-gates-harness-signal-detector';
 export { createInterventionSignalDetector } from './domain/services/intervention-signal-detector';
